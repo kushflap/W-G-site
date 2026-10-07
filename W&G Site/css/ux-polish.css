@@ -1,0 +1,1531 @@
+/*
+ * Kousha's Table UX / visual polish layer
+ * Inspired by established VTT patterns: map-first focus, clear tool hierarchy,
+ * independent application windows, resilient scrolling, and container-aware UI.
+ */
+:root{
+  --ui-radius:10px;
+  --ui-radius-sm:7px;
+  --ui-control-h:40px;
+  --ui-space-1:6px;
+  --ui-space-2:10px;
+  --ui-space-3:14px;
+  --ui-space-4:18px;
+  --ui-space-5:24px;
+  --ui-window-bg:rgba(12,14,18,.965);
+  --ui-window-border:rgba(206,177,111,.27);
+  --ui-window-border-strong:rgba(232,197,102,.58);
+  --ui-header-bg:linear-gradient(180deg,rgba(31,34,40,.985),rgba(15,17,21,.985));
+  --ui-focus:rgba(232,197,102,.65);
+}
+
+html{scroll-behavior:smooth;scrollbar-gutter:stable;}
+body{
+  text-rendering:optimizeLegibility;
+  -webkit-font-smoothing:auto;
+  font-size:16px;
+  line-height:1.45;
+  overflow-x:hidden;
+}
+button,input,select,textarea{font-weight:600;}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--ui-focus)!important;
+  outline-offset:2px!important;
+}
+
+#main-navigation{
+  min-height:58px;
+  padding-inline:clamp(10px,2vw,28px);
+  gap:5px;
+  box-shadow:0 7px 24px rgba(0,0,0,.22);
+}
+#main-navigation::-webkit-scrollbar{height:7px}
+#main-navigation::-webkit-scrollbar-thumb{background:rgba(190,160,95,.28);border-radius:10px}
+.brand{font-family:var(--font-display);letter-spacing:.045em;font-size:1.02rem;}
+.nav-button{
+  min-height:40px;
+  border-radius:7px;
+  padding:8px 11px;
+  transition:background .16s ease,border-color .16s ease,color .16s ease,transform .12s ease;
+}
+.nav-button:hover{background:rgba(194,154,67,.08);color:var(--text);}
+.nav-button.active{box-shadow:inset 0 -2px 0 var(--accent-bright);}
+
+#main-content{
+  width:min(1600px,100%);
+  padding:clamp(18px,2.4vw,34px);
+}
+.section-header{margin-bottom:clamp(16px,2vw,24px);}
+.section-header h1{font-size:clamp(1.8rem,3.6vw,2.65rem);line-height:1.05;}
+.section-header .muted{max-width:74ch;}
+
+button{
+  min-height:var(--ui-control-h);
+  border-radius:var(--ui-radius-sm);
+  padding:8px 12px;
+  border:1px solid rgba(188,165,120,.23);
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));
+  box-shadow:inset 0 1px rgba(255,255,255,.035),0 2px 8px rgba(0,0,0,.15);
+  transition:transform .12s ease,border-color .15s ease,background .15s ease,box-shadow .15s ease;
+}
+button:hover{border-color:rgba(232,197,102,.42);background:linear-gradient(180deg,rgba(194,154,67,.12),rgba(255,255,255,.025));}
+button:active{transform:translateY(1px);}
+.button-primary{box-shadow:inset 0 1px rgba(255,255,255,.07),0 4px 14px rgba(102,60,20,.18);}
+.button-danger{border-color:rgba(192,68,58,.38);}
+
+input,select,textarea{
+  min-height:var(--ui-control-h);
+  border-radius:var(--ui-radius-sm);
+  border:1px solid rgba(188,165,120,.24);
+  background:#101216;
+  color:var(--text);
+  padding:8px 10px;
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.28);
+}
+textarea{min-height:110px;line-height:1.5;}
+input::placeholder,textarea::placeholder{color:rgba(163,149,128,.72);}
+
+.card{
+  border-radius:var(--ui-radius);
+  padding:clamp(14px,1.5vw,20px);
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.018),transparent 40%),
+    linear-gradient(180deg,rgba(32,26,21,.72),rgba(15,13,12,.9));
+  border-color:rgba(176,138,62,.28);
+  box-shadow:0 14px 38px rgba(0,0,0,.23),inset 0 1px rgba(255,255,255,.018);
+}
+.card h2,.card h3{line-height:1.15;}
+.badge{font-weight:800;}
+
+/* A cleaner page-level scrolling model. */
+body:not(.map-page) #main-content{min-height:calc(100svh - 58px);}
+body:not(.map-page) .app-section{min-height:0;}
+
+/* Home / command deck */
+.home-page{max-width:1300px;margin:0 auto;padding:clamp(18px,4vw,52px) 0 56px;}
+.home-hero{
+  padding:clamp(22px,4vw,42px);
+  margin-bottom:20px;
+  border:1px solid rgba(190,160,95,.20);
+  border-radius:var(--ui-radius);
+  background:
+    radial-gradient(circle at 80% 0%,rgba(194,154,67,.10),transparent 28%),
+    linear-gradient(145deg,rgba(30,24,19,.82),rgba(11,10,9,.66));
+  box-shadow:0 20px 55px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.02);
+}
+.home-hero h1{font-family:var(--font-display);font-size:clamp(2.35rem,7vw,5.4rem);letter-spacing:.015em;}
+.home-hero .muted{font-size:clamp(.96rem,1.3vw,1.08rem);}
+.home-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:clamp(12px,1.4vw,18px);}
+.home-card{
+  min-height:200px;
+  position:relative;
+  padding:clamp(16px,2.3cqw,28px);
+  gap:clamp(7px,1.4cqw,12px);
+  overflow:hidden;
+  isolation:isolate;
+}
+.home-card::before{
+  content:"";position:absolute;inset:0 auto 0 0;width:3px;
+  background:linear-gradient(180deg,rgba(232,197,102,.72),rgba(127,68,26,.25));
+  opacity:.75;
+}
+.home-card::after{
+  content:"";position:absolute;right:-32px;top:-32px;width:110px;height:110px;border:1px solid rgba(220,190,130,.08);border-radius:50%;z-index:-1;
+}
+.home-card:hover{transform:translateY(-3px);border-color:rgba(232,197,102,.44);box-shadow:0 20px 42px rgba(0,0,0,.32),0 0 0 1px rgba(232,197,102,.05);}
+.home-card-icon{font-size:clamp(1.35rem,7cqw,2rem)!important;}
+.home-card strong{font-size:clamp(1rem,6.2cqw,1.34rem)!important;line-height:1.12!important;overflow-wrap:anywhere;}
+.home-card .muted{font-size:clamp(.75rem,4.1cqw,.94rem)!important;line-height:1.42!important;overflow-wrap:anywhere;}
+.home-card-open{font-size:clamp(.78rem,4.2cqw,.94rem)!important;line-height:1.2;}
+
+/* Unified scrollbar language. */
+*{scrollbar-width:thin;scrollbar-color:rgba(194,154,67,.36) transparent;}
+*::-webkit-scrollbar{width:9px;height:9px;}
+*::-webkit-scrollbar-track{background:rgba(0,0,0,.12);}
+*::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(194,154,67,.44),rgba(112,83,36,.45));border:2px solid transparent;background-clip:padding-box;border-radius:10px;}
+*::-webkit-scrollbar-thumb:hover{background:linear-gradient(180deg,rgba(232,197,102,.62),rgba(135,96,40,.58));border:2px solid transparent;background-clip:padding-box;}
+
+/* ==============================================================
+   Map: a true desktop tabletop surface with three sibling windows.
+   ============================================================ */
+@media (min-width:781px){
+  body.map-page #main-content{
+    width:100%;
+    max-width:none;
+    min-height:0!important;
+    height:auto!important;
+    overflow:visible!important;
+    padding:clamp(14px,1.5vw,24px);
+  }
+  body.map-page #map-section{
+    min-height:0!important;
+    height:auto!important;
+    overflow:visible!important;
+  }
+  body.map-page #map-vtt.map-workspace{
+    width:100%!important;
+    height:max(620px,calc(100svh - 175px))!important;
+    min-height:620px!important;
+    max-height:none!important;
+    position:relative!important;
+    display:block!important;
+    overflow:visible!important;
+    border:1px solid rgba(192,160,90,.22)!important;
+    border-radius:14px!important;
+    background:
+      radial-gradient(circle at 50% 45%,rgba(34,38,45,.42),transparent 52%),
+      radial-gradient(circle at 15% 85%,rgba(111,43,22,.10),transparent 35%),
+      #07090c!important;
+    box-shadow:0 24px 70px rgba(0,0,0,.30),inset 0 1px rgba(255,255,255,.025)!important;
+    isolation:isolate!important;
+  }
+
+  /* All three windows share one visual grammar and one window manager. */
+  body.map-page #map-vtt > .map-toolbar,
+  body.map-page #map-vtt > .initiative-panel,
+  body.map-page #map-vtt > .map-viewer-window{
+    container-type:inline-size;
+    box-sizing:border-box!important;
+    border-radius:12px!important;
+    border:1px solid var(--ui-window-border)!important;
+    background:var(--ui-window-bg)!important;
+    box-shadow:0 18px 50px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.028)!important;
+    backdrop-filter:blur(8px);
+  }
+
+  /* Sidebar windows: the header is chrome, all remaining content scrolls beneath it. */
+  body.map-page #map-vtt > .map-toolbar,
+  body.map-page #map-vtt > .initiative-panel{
+    overflow:auto!important;
+    overscroll-behavior:contain!important;
+    scrollbar-gutter:stable both-edges!important;
+    padding:0!important;
+    display:block!important;
+  }
+  body.map-page #map-vtt > .map-toolbar > .floating-panel-drag-handle,
+  body.map-page #map-vtt > .initiative-panel > .floating-panel-drag-handle{
+    position:sticky!important;
+    top:0!important;
+    height:38px!important;
+    min-height:38px!important;
+    margin:0!important;
+    z-index:3000!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    gap:7px!important;
+    padding:0 12px!important;
+    border:0!important;
+    border-bottom:1px solid rgba(220,210,190,.15)!important;
+    border-radius:11px 11px 0 0!important;
+    background:var(--ui-header-bg)!important;
+    color:#eee8dc!important;
+    font-family:var(--font-display)!important;
+    font-size:clamp(.72rem,3.2cqi,.86rem)!important;
+    font-weight:850!important;
+    letter-spacing:.11em!important;
+    text-transform:uppercase!important;
+    cursor:grab!important;
+    user-select:none!important;
+    touch-action:none!important;
+  }
+  body.map-page #map-vtt > .map-toolbar > .tool-group{padding:clamp(9px,1.8cqi,14px) clamp(11px,2.3cqi,16px)!important;margin:0!important;border-bottom:1px solid rgba(255,255,255,.04)!important;}
+  body.map-page #map-vtt > .map-toolbar > .tool-group:last-of-type{border-bottom:0!important;}
+  body.map-page #map-vtt > .map-toolbar .tool-title{font-size:clamp(.72rem,3.2cqi,.84rem)!important;letter-spacing:.09em!important;}
+  body.map-page #map-vtt > .map-toolbar button,
+  body.map-page #map-vtt > .initiative-panel button{font-size:clamp(.78rem,3.4cqi,.94rem)!important;}
+  body.map-page #map-vtt > .map-toolbar input,
+  body.map-page #map-vtt > .map-toolbar select{font-size:clamp(.78rem,3.3cqi,.92rem)!important;}
+
+  body.map-page #map-vtt > .initiative-panel > .initiative-panel-header{margin:0!important;padding:clamp(10px,2cqi,14px)!important;background:linear-gradient(180deg,rgba(35,29,22,.36),transparent)!important;border-bottom:1px solid rgba(255,255,255,.045)!important;}
+  body.map-page #map-vtt > .initiative-panel > .initiative-panel-round{padding:9px 12px!important;margin:0!important;border-bottom:1px solid rgba(255,255,255,.045)!important;font-size:clamp(.74rem,3.2cqi,.86rem)!important;}
+  body.map-page #map-vtt > .initiative-panel > .initiative-panel-list{padding:10px 12px 14px!important;margin:0!important;}
+
+  /* Map Viewer: one header, one viewport, nothing else can eat the chrome. */
+  body.map-page #map-vtt > .map-viewer-window{
+    overflow:hidden!important;
+    padding:0!important;
+  }
+  body.map-page #map-vtt > .map-viewer-window > .map-viewer-drag-handle{
+    position:absolute!important;
+    left:0!important;right:0!important;top:0!important;
+    height:40px!important;min-height:40px!important;
+    margin:0!important;
+    z-index:5000!important;
+    display:flex!important;align-items:center!important;gap:7px!important;
+    padding:0 13px!important;
+    border:0!important;border-bottom:1px solid rgba(220,210,190,.16)!important;
+    border-radius:11px 11px 0 0!important;
+    background:var(--ui-header-bg)!important;
+    color:#eee8dc!important;
+    font-family:var(--font-display)!important;
+    font-size:clamp(.74rem,1.1cqi,.9rem)!important;
+    font-weight:850!important;letter-spacing:.11em!important;text-transform:uppercase!important;
+    cursor:grab!important;user-select:none!important;touch-action:none!important;
+  }
+  body.map-page #map-vtt > .map-viewer-window > .map-stage-wrap{
+    position:absolute!important;
+    left:0!important;right:0!important;top:40px!important;bottom:0!important;
+    width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;
+    margin:0!important;padding:12px!important;
+    border:0!important;border-radius:0!important;
+    display:flex!important;align-items:center!important;justify-content:center!important;
+    overflow:auto!important;overscroll-behavior:contain!important;
+    scrollbar-gutter:stable both-edges!important;
+    background:radial-gradient(circle at 50% 50%,rgba(12,16,20,.32),#020304 72%)!important;
+    z-index:1!important;
+  }
+  body.map-page #map-vtt > .map-viewer-window > .map-stage-wrap .map-stage{z-index:2!important;}
+
+  /* Window handles: always available, subtle by default, obvious on hover/focus. */
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle,
+  body.map-page #map-vtt > .map-viewer-window > .panel-resize-handle{
+    opacity:.22!important;
+    display:block!important;
+    pointer-events:auto!important;
+    z-index:9000!important;
+    background:transparent!important;
+  }
+  body.map-page #map-vtt > .map-toolbar:hover > .panel-resize-handle,
+  body.map-page #map-vtt > .map-toolbar:focus-within > .panel-resize-handle,
+  body.map-page #map-vtt > .initiative-panel:hover > .panel-resize-handle,
+  body.map-page #map-vtt > .initiative-panel:focus-within > .panel-resize-handle,
+  body.map-page #map-vtt > .map-viewer-window:hover > .panel-resize-handle,
+  body.map-page #map-vtt > .map-viewer-window:focus-within > .panel-resize-handle{opacity:.72!important;}
+  body.map-page #map-vtt > * > .panel-resize-handle.edge-left,
+  body.map-page #map-vtt > * > .panel-resize-handle.edge-right{width:10px!important;top:8px!important;bottom:8px!important;}
+  body.map-page #map-vtt > * > .panel-resize-handle.edge-left{left:-5px!important;cursor:ew-resize!important;}
+  body.map-page #map-vtt > * > .panel-resize-handle.edge-right{right:-5px!important;cursor:ew-resize!important;}
+  body.map-page #map-vtt > * > .panel-resize-handle.edge-top,
+  body.map-page #map-vtt > * > .panel-resize-handle.edge-bottom{height:10px!important;left:8px!important;right:8px!important;}
+  body.map-page #map-vtt > * > .panel-resize-handle.edge-top{top:-5px!important;cursor:ns-resize!important;}
+  body.map-page #map-vtt > * > .panel-resize-handle.edge-bottom{bottom:-5px!important;cursor:ns-resize!important;}
+  body.map-page #map-vtt > * > .panel-resize-handle.corner-nw,
+  body.map-page #map-vtt > * > .panel-resize-handle.corner-ne,
+  body.map-page #map-vtt > * > .panel-resize-handle.corner-sw,
+  body.map-page #map-vtt > * > .panel-resize-handle.corner-se{width:18px!important;height:18px!important;}
+  body.map-page #map-vtt > * > .panel-resize-handle.corner-nw{left:-6px!important;top:-6px!important;cursor:nwse-resize!important;}
+  body.map-page #map-vtt > * > .panel-resize-handle.corner-ne{right:-6px!important;top:-6px!important;cursor:nesw-resize!important;}
+  body.map-page #map-vtt > * > .panel-resize-handle.corner-sw{left:-6px!important;bottom:-6px!important;cursor:nesw-resize!important;}
+  body.map-page #map-vtt > * > .panel-resize-handle.corner-se{right:-6px!important;bottom:-6px!important;cursor:nwse-resize!important;}
+
+  /* Keep the map controls interactive. */
+  body.map-page #map-vtt .map-stage-wrap #map-image{pointer-events:auto!important;user-select:none!important;}
+  body.map-page #map-vtt .map-stage-wrap #map-draw,
+  body.map-page #map-vtt .map-stage-wrap #map-fog{pointer-events:none!important;}
+  body.map-page #map-vtt .map-stage-wrap #map-tokens{pointer-events:auto!important;}
+}
+
+/* Responsive workspace internals: each panel adapts to its own width. */
+@container (max-width: 260px){
+  .map-toolbar button,.initiative-panel button{padding-inline:8px!important;}
+}
+@container (max-width: 220px){
+  .map-toolbar .floating-panel-drag-handle,.initiative-panel .floating-panel-drag-handle{font-size:.7rem!important;letter-spacing:.07em!important;}
+}
+
+/* Exact dead-token size: the skull is 75% of the token box in both axes. */
+.map-token .token-dead-overlay,
+.player-map-token .token-dead-overlay{
+  position:absolute!important;
+  inset:12.5%!important;
+  width:75%!important;
+  height:75%!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  overflow:hidden!important;
+  background:rgba(160,18,18,.60)!important;
+  border-radius:50%!important;
+  color:#fff!important;
+  text-shadow:0 2px 4px rgba(0,0,0,.8)!important;
+  pointer-events:none!important;
+  z-index:100!important;
+}
+.map-token .token-dead-overlay .dead-skull-icon,
+.player-map-token .token-dead-overlay .dead-skull-icon{
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+}
+.map-token .token-dead-overlay .dead-skull-icon use,
+.player-map-token .token-dead-overlay .dead-skull-icon use{width:100%;height:100%;}
+
+/* Touch / reduced motion / narrow desktop safeguards. */
+@media (max-width:1100px) and (min-width:781px){
+  #main-navigation{gap:2px;}
+  .nav-button{padding-inline:9px;}
+  body.map-page #map-vtt.map-workspace{height:max(620px,calc(100svh - 180px))!important;}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}
+}
+@media (max-width:780px){
+  #main-content{padding:15px;}
+  .home-card{min-height:170px;}
+  button{min-height:42px;}
+  input,select,textarea{min-height:42px;}
+  body{overflow-y:auto;}
+}
+
+
+/* ================================================================
+   REFINED WORKSPACE CORE
+   One fixed chrome strip + one authoritative scroll body per window.
+   ================================================================ */
+@media (min-width:781px){
+  body.map-page #map-vtt.map-workspace{
+    position:relative!important;display:block!important;width:100%!important;
+    height:max(620px,calc(100svh - var(--nav-height,70px) - 96px))!important;
+    min-height:620px!important;overflow:visible!important;background:transparent!important;
+  }
+  body.map-page #map-vtt > .map-toolbar,
+  body.map-page #map-vtt > .initiative-panel,
+  body.map-page #map-vtt > .map-viewer-window{
+    position:absolute!important;display:flex!important;flex-direction:column!important;
+    box-sizing:border-box!important;padding:0!important;margin:0!important;overflow:hidden!important;
+    min-width:170px!important;min-height:130px!important;max-width:none!important;max-height:none!important;
+    border-radius:12px!important;isolation:isolate!important;
+  }
+  body.map-page #map-vtt > .map-toolbar .workspace-chrome,
+  body.map-page #map-vtt > .initiative-panel .workspace-chrome,
+  body.map-page #map-vtt > .map-viewer-window .workspace-chrome{
+    position:relative!important;z-index:20!important;flex:0 0 38px!important;width:100%!important;
+    min-height:38px!important;height:38px!important;box-sizing:border-box!important;
+    display:flex!important;align-items:center!important;gap:8px!important;margin:0!important;padding:0 10px!important;
+    overflow:hidden!important;border-bottom:1px solid rgba(235,210,145,.18)!important;
+    cursor:grab!important;user-select:none!important;touch-action:none!important;
+  }
+  .workspace-chrome.dragging{cursor:grabbing!important;}
+  .workspace-chrome .ic-grip{flex:0 0 16px!important;width:16px!important;height:16px!important;}
+  .workspace-chrome .workspace-title{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:.78rem;}
+  .workspace-minimize{flex:0 0 28px!important;width:28px!important;height:26px!important;min-height:26px!important;padding:0!important;display:grid!important;place-items:center!important;border:1px solid rgba(235,210,145,.24)!important;background:rgba(0,0,0,.22)!important;border-radius:6px!important;cursor:pointer!important;font-size:1.05rem!important;}
+  .workspace-minimize:hover,.workspace-minimize:focus-visible{border-color:var(--accent)!important;background:rgba(235,210,145,.1)!important;}
+  body.map-page #map-vtt > .map-toolbar .workspace-panel-body{flex:1 1 auto!important;min-width:0!important;min-height:0!important;overflow:auto!important;overscroll-behavior:contain!important;scrollbar-gutter:stable!important;padding:0!important;}
+  body.map-page #map-vtt > .map-toolbar .toolbar-body .tool-group{margin:0!important;padding:12px!important;}
+  body.map-page #map-vtt > .map-toolbar .toolbar-body .tool-group + .tool-group{border-top:1px solid rgba(235,210,145,.12)!important;}
+  body.map-page #map-vtt > .initiative-panel .workspace-panel-body{display:flex!important;flex:1 1 auto!important;min-width:0!important;min-height:0!important;flex-direction:column!important;overflow:hidden!important;}
+  body.map-page #map-vtt > .initiative-panel .initiative-panel-header{flex:0 0 auto!important;}
+  body.map-page #map-vtt > .initiative-panel .initiative-panel-round{flex:0 0 auto!important;}
+  body.map-page #map-vtt > .initiative-panel .initiative-panel-list{flex:1 1 auto!important;min-width:0!important;min-height:0!important;overflow:auto!important;overscroll-behavior:contain!important;scrollbar-gutter:stable!important;}
+  body.map-page #map-vtt > .map-viewer-window{background:#000!important;}
+  body.map-page #map-vtt > .map-viewer-window > .map-stage-wrap{position:relative!important;inset:auto!important;flex:1 1 auto!important;min-width:0!important;min-height:0!important;width:auto!important;height:auto!important;margin:0!important;padding:10px!important;box-sizing:border-box!important;overflow:auto!important;border:0!important;border-radius:0!important;background:#000!important;display:flex!important;align-items:center!important;justify-content:center!important;scrollbar-gutter:stable!important;overscroll-behavior:contain!important;}
+  body.map-page #map-vtt > .map-toolbar.is-minimized,
+  body.map-page #map-vtt > .initiative-panel.is-minimized,
+  body.map-page #map-vtt > .map-viewer-window.is-minimized{height:38px!important;min-height:38px!important;}
+  body.map-page #map-vtt > .map-toolbar.is-minimized .workspace-panel-body,
+  body.map-page #map-vtt > .initiative-panel.is-minimized .workspace-panel-body,
+  body.map-page #map-vtt > .map-viewer-window.is-minimized > .map-stage-wrap{display:none!important;}
+}
+
+/* Dead-token layers: the full token is dead/red; the skull is independently layered
+   above the red and occupies exactly 75% of the token in both axes. */
+.map-token,.player-map-token{box-sizing:border-box!important;}
+.map-token.is-dead,.player-map-token.is-dead{isolation:isolate!important;}
+.map-token .token-dead-red,.player-map-token .token-dead-red{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;margin:0!important;padding:0!important;background:rgba(154,18,18,.78)!important;border-radius:inherit!important;z-index:10!important;pointer-events:none!important;}
+.map-token .token-dead-skull,.player-map-token .token-dead-skull{position:absolute!important;left:50%!important;top:50%!important;width:calc(var(--token-size,40px) * .75)!important;height:calc(var(--token-size,40px) * .75)!important;transform:translate(-50%,-50%)!important;margin:0!important;padding:0!important;display:grid!important;place-items:center!important;z-index:20!important;pointer-events:none!important;color:#fff!important;filter:drop-shadow(0 2px 3px rgba(0,0,0,.9))!important;}
+.map-token .token-dead-skull .dead-skull-icon,.player-map-token .token-dead-skull .dead-skull-icon{display:block!important;width:100%!important;height:100%!important;}
+.map-token.is-dead .token-art,.player-map-token.is-dead .token-art{filter:grayscale(.9) brightness(.58)!important;}
+
+
+/* Final resize-hitbox correction. Legacy map CSS used sticky positioning for
+   the lower handle; all eight handles now live inside the window boundary. */
+@media (min-width:781px){
+  body.map-page #map-vtt > .map-toolbar,
+  body.map-page #map-vtt > .initiative-panel,
+  body.map-page #map-vtt > .map-viewer-window{contain:layout!important;}
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle,
+  body.map-page #map-vtt > .map-viewer-window > .panel-resize-handle{
+    position:absolute!important;display:block!important;opacity:.55!important;pointer-events:auto!important;
+    z-index:10000!important;background:transparent!important;border:0!important;margin:0!important;padding:0!important;
+  }
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.edge-left,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.edge-left,
+  body.map-page #map-vtt > .map-viewer-window > .panel-resize-handle.edge-left{left:0!important;top:12px!important;bottom:12px!important;width:12px!important;height:auto!important;cursor:ew-resize!important;}
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.edge-right,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.edge-right,
+  body.map-page #map-vtt > .map-viewer-window > .panel-resize-handle.edge-right{right:0!important;top:12px!important;bottom:12px!important;width:12px!important;height:auto!important;cursor:ew-resize!important;}
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.edge-top,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.edge-top,
+  body.map-page #map-vtt > .map-viewer-window > .panel-resize-handle.edge-top{top:0!important;left:12px!important;right:12px!important;height:12px!important;width:auto!important;cursor:ns-resize!important;}
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.edge-bottom,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.edge-bottom,
+  body.map-page #map-vtt > .map-viewer-window > .panel-resize-handle.edge-bottom{bottom:0!important;left:12px!important;right:12px!important;height:12px!important;width:auto!important;cursor:ns-resize!important;}
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.corner-nw,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.corner-nw,
+  body.map-page #map-vtt > .map-viewer-window > .panel-resize-handle.corner-nw{left:0!important;top:0!important;width:18px!important;height:18px!important;cursor:nwse-resize!important;}
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.corner-ne,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.corner-ne,
+  body.map-page #map-vtt > .map-viewer-window > .panel-resize-handle.corner-ne{right:0!important;top:0!important;width:18px!important;height:18px!important;cursor:nesw-resize!important;}
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.corner-sw,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.corner-sw,
+  body.map-page #map-vtt > .map-viewer-window > .panel-resize-handle.corner-sw{left:0!important;bottom:0!important;width:18px!important;height:18px!important;cursor:nesw-resize!important;}
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.corner-se,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.corner-se,
+  body.map-page #map-vtt > .map-viewer-window > .panel-resize-handle.corner-se{right:0!important;bottom:0!important;width:18px!important;height:18px!important;cursor:nwse-resize!important;}
+  body.map-page #map-vtt > .map-toolbar:hover > .panel-resize-handle,
+  body.map-page #map-vtt > .initiative-panel:hover > .panel-resize-handle,
+  body.map-page #map-vtt > .map-viewer-window:hover > .panel-resize-handle{opacity:.86!important;}
+}
+
+/* ================================================================
+   REFINED WINDOW/SCROLL SYSTEM
+   One outer window, one chrome bar, one scroll owner.
+   This supersedes legacy map overflow rules without changing the
+   underlying floating-window mechanics.
+   ================================================================ */
+@media (min-width:781px){
+  body.map-page #map-vtt.map-workspace{
+    overflow:visible!important;
+    min-height:560px!important;
+    height:calc(100svh - var(--nav-h,58px) - 118px)!important;
+    max-height:none!important;
+  }
+
+  body.map-page #map-vtt > .map-toolbar,
+  body.map-page #map-vtt > .initiative-panel,
+  body.map-page #map-vtt > .map-viewer-window{
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:hidden!important;
+    box-sizing:border-box!important;
+    padding:0!important;
+    margin:0!important;
+  }
+
+  /* Headers are chrome, never scroll content. */
+  body.map-page #map-vtt > .map-toolbar > .workspace-chrome,
+  body.map-page #map-vtt > .initiative-panel > .workspace-chrome,
+  body.map-page #map-vtt > .map-viewer-window > .workspace-chrome{
+    position:relative!important;
+    inset:auto!important;
+    flex:0 0 38px!important;
+    width:100%!important;
+    height:38px!important;
+    min-height:38px!important;
+    margin:0!important;
+    padding:0 10px!important;
+    box-sizing:border-box!important;
+    display:flex!important;
+    align-items:center!important;
+    overflow:hidden!important;
+    z-index:5000!important;
+  }
+
+  /* Toolbar has exactly one scrollable region. */
+  body.map-page #map-vtt > .map-toolbar > .toolbar-body{
+    display:block!important;
+    flex:1 1 auto!important;
+    min-width:0!important;
+    min-height:0!important;
+    width:100%!important;
+    height:auto!important;
+    overflow:auto!important;
+    overflow-x:hidden!important;
+    overscroll-behavior:contain!important;
+    scrollbar-gutter:stable both-edges!important;
+    padding:0!important;
+  }
+  body.map-page #map-vtt > .map-toolbar > .toolbar-body > .tool-group,
+  body.map-page #map-vtt > .map-toolbar > .toolbar-body .visibility-tool-group,
+  body.map-page #map-vtt > .map-toolbar > .toolbar-body .brush-controls{
+    overflow:visible!important;
+    max-height:none!important;
+  }
+
+  /* Combat tracker has exactly one scrollable region: the item list. */
+  body.map-page #map-vtt > .initiative-panel > .initiative-body{
+    display:flex!important;
+    flex-direction:column!important;
+    flex:1 1 auto!important;
+    min-width:0!important;
+    min-height:0!important;
+    width:100%!important;
+    height:auto!important;
+    overflow:hidden!important;
+    padding:0!important;
+  }
+  body.map-page #map-vtt > .initiative-panel .initiative-panel-header,
+  body.map-page #map-vtt > .initiative-panel .initiative-panel-round{
+    flex:0 0 auto!important;
+    overflow:visible!important;
+  }
+  body.map-page #map-vtt > .initiative-panel .initiative-panel-list{
+    flex:1 1 auto!important;
+    min-width:0!important;
+    min-height:0!important;
+    width:100%!important;
+    height:auto!important;
+    overflow:auto!important;
+    overflow-x:hidden!important;
+    overscroll-behavior:contain!important;
+    scrollbar-gutter:stable both-edges!important;
+    padding:0 10px 10px!important;
+    box-sizing:border-box!important;
+  }
+
+  /* Map Viewer has exactly one scrollable viewport under its chrome. */
+  body.map-page #map-vtt > .map-viewer-window > .map-stage-wrap{
+    position:relative!important;
+    inset:auto!important;
+    flex:1 1 auto!important;
+    min-width:0!important;
+    min-height:0!important;
+    width:100%!important;
+    height:auto!important;
+    margin:0!important;
+    padding:10px!important;
+    box-sizing:border-box!important;
+    overflow:auto!important;
+    overflow-x:auto!important;
+    overflow-y:auto!important;
+    scrollbar-gutter:stable both-edges!important;
+    overscroll-behavior:contain!important;
+  }
+  body.map-page #map-vtt > .map-viewer-window > .map-stage-wrap > .map-stage{
+    overflow:visible!important;
+  }
+
+  /* Don't let legacy descendants create surprise scrollbars. */
+  body.map-page #map-vtt > .map-toolbar .tool-group,
+  body.map-page #map-vtt > .map-toolbar .tool-group > *,
+  body.map-page #map-vtt > .initiative-panel .initiative-panel-header,
+  body.map-page #map-vtt > .initiative-panel .initiative-panel-round{
+    scrollbar-width:none!important;
+  }
+
+  /* Resize handles stay exactly on the outer boundary and never scroll. */
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle,
+  body.map-page #map-vtt > .map-viewer-window > .panel-resize-handle{
+    position:absolute!important;
+    z-index:10000!important;
+    pointer-events:auto!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+  }
+}
+
+/* Chromium/WebKit scrollbar normalization for the three workspace scroll owners. */
+body.map-page #map-vtt > .map-toolbar > .toolbar-body::-webkit-scrollbar,
+body.map-page #map-vtt > .initiative-panel .initiative-panel-list::-webkit-scrollbar,
+body.map-page #map-vtt > .map-viewer-window > .map-stage-wrap::-webkit-scrollbar{width:10px;height:10px;}
+body.map-page #map-vtt > .map-toolbar > .toolbar-body::-webkit-scrollbar-track,
+body.map-page #map-vtt > .initiative-panel .initiative-panel-list::-webkit-scrollbar-track,
+body.map-page #map-vtt > .map-viewer-window > .map-stage-wrap::-webkit-scrollbar-track{background:rgba(0,0,0,.16);}
+body.map-page #map-vtt > .map-toolbar > .toolbar-body::-webkit-scrollbar-thumb,
+body.map-page #map-vtt > .initiative-panel .initiative-panel-list::-webkit-scrollbar-thumb,
+body.map-page #map-vtt > .map-viewer-window > .map-stage-wrap::-webkit-scrollbar-thumb{background:rgba(190,160,95,.34);border-radius:999px;border:2px solid transparent;background-clip:padding-box;}
+
+/* Character content editor */
+.character-content-editor{margin-top:22px;padding-top:20px;border-top:1px solid rgba(190,160,95,.18);}
+.character-content-heading h2{margin:.2rem 0 .25rem;font-size:clamp(1.15rem,2.2cqw,1.55rem);}
+.character-content-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;margin-top:14px;}
+.character-content-block{min-width:0;border:1px solid rgba(190,160,95,.16);border-radius:10px;padding:12px;background:rgba(0,0,0,.16);}
+.character-content-block-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.character-content-block-head>div{min-width:0;display:flex;flex-direction:column;gap:2px;}
+.character-content-block-head .muted{font-size:.78rem;}
+.character-content-block-head .content-new-button{min-height:34px;padding:6px 9px;white-space:nowrap;}
+.character-content-selected{display:flex;flex-wrap:wrap;gap:6px;min-height:34px;margin-bottom:10px;align-content:flex-start;}
+.character-content-chip{max-width:100%;display:inline-flex;align-items:center;gap:6px;padding:5px 7px 5px 9px;border:1px solid rgba(190,160,95,.23);border-radius:999px;background:rgba(194,154,67,.08);font-size:.78rem;font-weight:700;}
+.character-content-chip>span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.character-content-chip button{width:22px;min-width:22px;height:22px;min-height:22px;padding:0;border-radius:50%;display:grid;place-items:center;font-size:.9rem;line-height:1;}
+.character-content-chip.missing{opacity:.7;}
+.character-content-add{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:7px;align-items:center;}
+.character-content-add select{min-width:0;}
+.character-content-add button{min-height:40px;padding-inline:12px;}
+.character-content-modal{max-height:min(90vh,760px);overflow:auto;scrollbar-gutter:stable;}
+.character-content-modal textarea{min-height:90px;}
+@media (max-width:780px){
+  .character-content-grid{grid-template-columns:1fr;}
+  .character-content-add{grid-template-columns:1fr;}
+  .character-content-add button{width:100%;}
+}
+
+/* Dead state also colors the token's own border/surface so the entire
+   rendered token, including its outer rim, reads as dead. The separate
+   red layer remains above the artwork and the skull remains above the red. */
+.map-token.is-dead,
+.player-map-token.is-dead{
+  background:#8e1b17!important;
+  border-color:#c0443a!important;
+}
+
+/* Home cards inherit from button, so explicitly allow their own content to wrap. */
+.home-card,
+.home-card > *{
+  white-space:normal!important;
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+.home-card strong,
+.home-card .muted,
+.home-card .home-card-open{
+  width:100%!important;
+  overflow-wrap:anywhere!important;
+  word-break:break-word!important;
+}
+
+
+/* ================================================================
+   FINAL UI REFINEMENT V5
+   One coherent motion/spacing layer. Loaded last so legacy map rules
+   cannot reintroduce conflicting window, scroll, or dead-token styles.
+   ================================================================ */
+:root{
+  --ui-space-1:4px;
+  --ui-space-2:8px;
+  --ui-space-3:12px;
+  --ui-space-4:16px;
+  --ui-space-5:20px;
+  --ui-space-6:24px;
+  --ui-window-gap:14px;
+  --ui-motion-fast:120ms;
+  --ui-motion:200ms;
+  --ui-motion-slow:280ms;
+  --ui-ease:cubic-bezier(.2,.72,.22,1);
+  --ui-window-radius:12px;
+}
+
+/* Lower-opacity dead state. Red and skull remain separate layers. */
+.map-token .token-dead-red,
+.player-map-token .token-dead-red{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  margin:0!important;
+  padding:0!important;
+  background:rgba(154,18,18,.46)!important;
+  opacity:.58!important;
+  border-radius:inherit!important;
+  z-index:10!important;
+  pointer-events:none!important;
+  transition:opacity var(--ui-motion) var(--ui-ease),background-color var(--ui-motion) ease!important;
+}
+.map-token .token-dead-skull,
+.player-map-token .token-dead-skull{
+  position:absolute!important;
+  left:50%!important;
+  top:50%!important;
+  width:calc(var(--token-size,40px)*.75)!important;
+  height:calc(var(--token-size,40px)*.75)!important;
+  transform:translate(-50%,-50%) scale(1)!important;
+  margin:0!important;
+  padding:0!important;
+  display:grid!important;
+  place-items:center!important;
+  z-index:20!important;
+  pointer-events:none!important;
+  color:#fff!important;
+  opacity:.58!important;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.8))!important;
+  transition:opacity var(--ui-motion) var(--ui-ease),transform var(--ui-motion) var(--ui-ease)!important;
+}
+.map-token .token-dead-skull .dead-skull-icon,
+.player-map-token .token-dead-skull .dead-skull-icon{display:block!important;width:100%!important;height:100%!important;}
+
+/* Shared spacing: fewer orphaned pixels, consistent control rhythm. */
+.toolbar,.combat-toolbar,.zoom-controls{gap:var(--ui-space-2)!important;}
+.field{gap:6px!important;}
+.card,.modal-card{box-sizing:border-box;}
+button,input,select,textarea{box-sizing:border-box;}
+button{transition:transform var(--ui-motion-fast) var(--ui-ease),opacity var(--ui-motion-fast) ease,
+  background-color var(--ui-motion-fast) ease,border-color var(--ui-motion-fast) ease,
+  box-shadow var(--ui-motion-fast) ease,color var(--ui-motion-fast) ease!important;}
+button:hover{transform:translateY(-1px);}
+button:active{transform:translateY(0);}
+button:disabled{cursor:not-allowed;transform:none!important;opacity:.5;}
+
+/* Independent windows: tight chrome and content with exactly one scroll owner. */
+body.map-page #map-vtt > .map-toolbar,
+body.map-page #map-vtt > .initiative-panel,
+body.map-page #map-vtt > .map-viewer-window{
+  box-sizing:border-box!important;
+  border-radius:var(--ui-window-radius)!important;
+  padding:0!important;
+  margin:0!important;
+  overflow:hidden!important;
+  isolation:isolate!important;
+  transition:left var(--ui-motion) var(--ui-ease),top var(--ui-motion) var(--ui-ease),
+    width var(--ui-motion) var(--ui-ease),height var(--ui-motion) var(--ui-ease),
+    opacity var(--ui-motion) ease,box-shadow var(--ui-motion) ease,transform var(--ui-motion) var(--ui-ease)!important;
+  will-change:left,top,width,height,transform,opacity;
+}
+body.map-page #map-vtt > .map-toolbar > .workspace-chrome,
+body.map-page #map-vtt > .initiative-panel > .workspace-chrome,
+body.map-page #map-vtt > .map-viewer-window > .workspace-chrome{
+  flex:0 0 38px!important;
+  height:38px!important;
+  min-height:38px!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0 10px!important;
+  box-sizing:border-box!important;
+  gap:8px!important;
+  overflow:hidden!important;
+  z-index:5000!important;
+  cursor:grab!important;
+  user-select:none!important;
+  touch-action:none!important;
+}
+body.map-page #map-vtt > .map-toolbar > .workspace-chrome.dragging,
+body.map-page #map-vtt > .initiative-panel > .workspace-chrome.dragging,
+body.map-page #map-vtt > .map-viewer-window > .workspace-chrome.dragging{cursor:grabbing!important;}
+.workspace-chrome .workspace-title{min-width:0;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.workspace-minimize{flex:0 0 28px!important;width:28px!important;height:26px!important;min-height:26px!important;padding:0!important;}
+
+body.map-page #map-vtt > .map-toolbar > .toolbar-body{
+  flex:1 1 auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  width:100%!important;
+  overflow:auto!important;
+  overflow-x:hidden!important;
+  padding:0!important;
+  scrollbar-gutter:stable!important;
+  overscroll-behavior:contain!important;
+}
+body.map-page #map-vtt > .map-toolbar .tool-group{padding:10px 11px!important;margin:0!important;}
+body.map-page #map-vtt > .map-toolbar .tool-group + .tool-group{border-top:1px solid rgba(235,210,145,.10)!important;}
+body.map-page #map-vtt > .initiative-panel > .initiative-body{
+  display:flex!important;flex:1 1 auto!important;flex-direction:column!important;
+  min-width:0!important;min-height:0!important;width:100%!important;height:auto!important;
+  overflow:hidden!important;padding:0!important;
+}
+body.map-page #map-vtt > .initiative-panel .initiative-panel-list{
+  flex:1 1 auto!important;min-width:0!important;min-height:0!important;width:100%!important;
+  overflow:auto!important;overflow-x:hidden!important;padding:7px 9px 9px!important;
+  box-sizing:border-box!important;scrollbar-gutter:stable!important;overscroll-behavior:contain!important;
+}
+body.map-page #map-vtt > .map-viewer-window > .map-stage-wrap{
+  flex:1 1 auto!important;min-width:0!important;min-height:0!important;
+  width:100%!important;height:auto!important;margin:0!important;padding:8px!important;
+  box-sizing:border-box!important;overflow:auto!important;overflow-x:auto!important;overflow-y:auto!important;
+  scrollbar-gutter:stable!important;overscroll-behavior:contain!important;
+}
+
+/* Minimize shrinks the entire outer window, including its background/border.
+   Content remains in the DOM so the transition is visible and reversible. */
+body.map-page #map-vtt > .map-toolbar.is-minimized,
+body.map-page #map-vtt > .initiative-panel.is-minimized,
+body.map-page #map-vtt > .map-viewer-window.is-minimized{
+  height:38px!important;
+  min-height:38px!important;
+  overflow:hidden!important;
+  box-shadow:0 9px 24px rgba(0,0,0,.28)!important;
+}
+body.map-page #map-vtt > .map-toolbar.is-minimized > .workspace-panel-body,
+body.map-page #map-vtt > .initiative-panel.is-minimized > .workspace-panel-body,
+body.map-page #map-vtt > .map-viewer-window.is-minimized > .map-stage-wrap{
+  flex:0 0 auto!important;
+  height:0!important;
+  max-height:0!important;
+  min-height:0!important;
+  opacity:0!important;
+  transform:translateY(-6px)!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+  visibility:hidden!important;
+  padding-block:0!important;
+  transition:height var(--ui-motion) var(--ui-ease),max-height var(--ui-motion) var(--ui-ease),
+    opacity var(--ui-motion-fast) ease,transform var(--ui-motion) var(--ui-ease),padding var(--ui-motion) ease,visibility 0s linear var(--ui-motion)!important;
+}
+body.map-page #map-vtt > .map-toolbar:not(.is-resizing),
+body.map-page #map-vtt > .initiative-panel:not(.is-resizing),
+body.map-page #map-vtt > .map-viewer-window:not(.is-resizing){
+  contain:layout paint;
+}
+body.map-page #map-vtt > .map-toolbar.is-resizing,
+body.map-page #map-vtt > .initiative-panel.is-resizing,
+body.map-page #map-vtt > .map-viewer-window.is-resizing{transition:none!important;will-change:auto;}
+
+/* Workspace resize handles remain independent of scroll and content. */
+body.map-page #map-vtt > .map-toolbar > .panel-resize-handle,
+body.map-page #map-vtt > .initiative-panel > .panel-resize-handle,
+body.map-page #map-vtt > .map-viewer-window > .panel-resize-handle{
+  position:absolute!important;display:block!important;pointer-events:auto!important;
+  z-index:10000!important;background:transparent!important;border:0!important;margin:0!important;padding:0!important;
+}
+
+/* Smooth surface feedback. */
+.card,.home-card,.token-lib-card,.combatant-card,.character-card,.dashboard-card{
+  transition:transform var(--ui-motion) var(--ui-ease),box-shadow var(--ui-motion) ease,border-color var(--ui-motion) ease,background-color var(--ui-motion) ease!important;
+}
+.card:hover,.home-card:hover,.token-lib-card:hover,.combatant-card:hover,.character-card:hover,.dashboard-card:hover{
+  transform:translateY(-1px);
+}
+
+/* Modal and toast motion. */
+@keyframes wt-backdrop-in{from{opacity:0}to{opacity:1}}
+@keyframes wt-modal-in{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes wt-toast-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes wt-spinner{to{transform:rotate(360deg)}}
+.modal-backdrop{animation:wt-backdrop-in var(--ui-motion-fast) ease both;}
+.modal-card{animation:wt-modal-in var(--ui-motion) var(--ui-ease) both;}
+.toast,.toast-message{animation:wt-toast-in var(--ui-motion) var(--ui-ease) both;}
+
+/* Page transitions and startup loading. */
+.app-section.page-enter{opacity:0;transform:translateY(8px);filter:blur(1px);}
+.app-section.page-enter-active{opacity:1;transform:none;filter:none;transition:opacity var(--ui-motion) var(--ui-ease),transform var(--ui-motion-slow) var(--ui-ease),filter var(--ui-motion) ease;}
+body:not(.app-ready)::after{
+  content:"";position:fixed;z-index:999999;left:50%;top:50%;width:28px;height:28px;margin:-14px;
+  border:2px solid rgba(235,210,145,.17);border-top-color:rgba(235,210,145,.84);border-radius:50%;
+  animation:wt-spinner .8s linear infinite;pointer-events:none;
+}
+body.app-ready::after{display:none;}
+body:not(.app-ready) #app{opacity:.001;}
+body.app-ready #app{opacity:1;transition:opacity var(--ui-motion-slow) ease;}
+
+/* Comfortable type rhythm in narrow windows. */
+body.map-page #map-vtt .tool-title{margin-bottom:5px!important;line-height:1.2!important;}
+body.map-page #map-vtt label{line-height:1.3!important;}
+body.map-page #map-vtt .small{line-height:1.35!important;}
+
+/* Responsive containment. */
+@media (max-width:1100px) and (min-width:781px){
+  body.map-page #map-vtt > .map-toolbar,
+  body.map-page #map-vtt > .initiative-panel{min-width:160px!important;}
+}
+@media (max-width:780px){
+  #main-content{padding:14px!important;}
+  button{min-height:42px;}
+  input,select,textarea{min-height:42px;}
+  body{overflow-x:hidden;overflow-y:auto;}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important;}
+}
+
+
+/* ================================================================
+   FINAL V5.1: restrained motion + geometry polish
+   ================================================================ */
+:root{
+  --ui-space-1:4px;
+  --ui-space-2:8px;
+  --ui-space-3:12px;
+  --ui-space-4:16px;
+  --ui-space-5:20px;
+  --ui-window-gap:14px;
+  --ui-motion-fast:120ms;
+  --ui-motion:200ms;
+  --ui-motion-slow:280ms;
+  --ui-ease:cubic-bezier(.2,.72,.22,1);
+}
+
+/* Requested lower dead-state opacity, while retaining two independent layers. */
+.map-token .token-dead-red,
+.player-map-token .token-dead-red{
+  opacity:.52!important;
+  background:rgba(154,18,18,.42)!important;
+}
+.map-token .token-dead-skull,
+.player-map-token .token-dead-skull{
+  opacity:.52!important;
+}
+
+/* The outer workspace owns its boundary; the body owns the scroll. */
+body.map-page #map-vtt > .map-toolbar,
+body.map-page #map-vtt > .initiative-panel,
+body.map-page #map-vtt > .map-viewer-window{
+  padding:0!important;
+  margin:0!important;
+  gap:0!important;
+  overflow:hidden!important;
+  border-radius:var(--ui-window-radius,12px)!important;
+  box-sizing:border-box!important;
+  backface-visibility:hidden;
+}
+body.map-page #map-vtt > .map-toolbar > .workspace-chrome,
+body.map-page #map-vtt > .initiative-panel > .workspace-chrome,
+body.map-page #map-vtt > .map-viewer-window > .workspace-chrome{
+  flex:0 0 38px!important;
+  height:38px!important;
+  min-height:38px!important;
+  margin:0!important;
+  padding-inline:10px!important;
+  box-sizing:border-box!important;
+}
+body.map-page #map-vtt > .map-toolbar > .toolbar-body,
+body.map-page #map-vtt > .initiative-panel > .initiative-body,
+body.map-page #map-vtt > .map-viewer-window > .map-stage-wrap{
+  min-width:0!important;
+  min-height:0!important;
+  box-sizing:border-box!important;
+}
+body.map-page #map-vtt > .map-toolbar > .toolbar-body,
+body.map-page #map-vtt > .initiative-panel .initiative-panel-list,
+body.map-page #map-vtt > .map-viewer-window > .map-stage-wrap{
+  scroll-behavior:smooth;
+  overscroll-behavior:contain!important;
+  scrollbar-gutter:stable!important;
+}
+body.map-page #map-vtt > .map-toolbar > .toolbar-body{overflow:auto!important;overflow-x:hidden!important;}
+body.map-page #map-vtt > .initiative-panel > .initiative-body{overflow:hidden!important;}
+body.map-page #map-vtt > .initiative-panel .initiative-panel-list{overflow:auto!important;overflow-x:hidden!important;}
+body.map-page #map-vtt > .map-viewer-window > .map-stage-wrap{overflow:auto!important;}
+
+/* Minimize animates the same outer box that paints the background. */
+body.map-page #map-vtt > .map-toolbar,
+body.map-page #map-vtt > .initiative-panel,
+body.map-page #map-vtt > .map-viewer-window{
+  transition:left var(--ui-motion) var(--ui-ease),top var(--ui-motion) var(--ui-ease),
+  width var(--ui-motion) var(--ui-ease),height var(--ui-motion) var(--ui-ease),
+  box-shadow var(--ui-motion) ease,opacity var(--ui-motion) ease!important;
+}
+body.map-page #map-vtt > .map-toolbar.is-minimized,
+body.map-page #map-vtt > .initiative-panel.is-minimized,
+body.map-page #map-vtt > .map-viewer-window.is-minimized{
+  height:38px!important;
+  min-height:38px!important;
+  overflow:hidden!important;
+}
+body.map-page #map-vtt > .map-toolbar.is-minimized > .toolbar-body,
+body.map-page #map-vtt > .initiative-panel.is-minimized > .initiative-body,
+body.map-page #map-vtt > .map-viewer-window.is-minimized > .map-stage-wrap{
+  height:0!important;
+  min-height:0!important;
+  max-height:0!important;
+  flex:0 0 0!important;
+  opacity:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  overflow:hidden!important;
+  padding-block:0!important;
+  margin-block:0!important;
+  transform:translateY(-4px)!important;
+}
+
+/* All interactive surfaces get the same motion language. */
+button,.nav-button,.map-tool,.workspace-minimize,input,select,textarea,
+.home-card,.card,.token-lib-card,.combatant-card,.character-card,
+.initiative-panel-item,.combat-manager-row,.present-token-row{
+  transition:transform var(--ui-motion-fast) var(--ui-ease),opacity var(--ui-motion-fast) ease,
+    border-color var(--ui-motion-fast) ease,background-color var(--ui-motion-fast) ease,
+    box-shadow var(--ui-motion-fast) ease,color var(--ui-motion-fast) ease!important;
+}
+button:hover,.nav-button:hover,.map-tool:hover,.workspace-minimize:hover{transform:translateY(-1px);}
+button:active,.nav-button:active,.map-tool:active,.workspace-minimize:active{transform:translateY(0);}
+
+/* Keep type legible and proportional to narrow workspace containers. */
+body.map-page #map-vtt .workspace-title{font-size:clamp(.72rem,2.8cqi,.88rem)!important;}
+body.map-page #map-vtt .tool-title{font-size:clamp(.70rem,2.9cqi,.84rem)!important;line-height:1.2!important;}
+body.map-page #map-vtt button,
+body.map-page #map-vtt input,
+body.map-page #map-vtt select{font-size:clamp(.76rem,3.0cqi,.92rem)!important;}
+body.map-page #map-vtt .small{font-size:clamp(.68rem,2.45cqi,.80rem)!important;}
+
+/* Startup and page changes. */
+@keyframes kt-spin{to{transform:rotate(360deg)}}
+@keyframes kt-page-in{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+@keyframes kt-window-in{from{opacity:0;transform:translateY(5px) scale(.995)}to{opacity:1;transform:none}}
+body:not(.app-ready)::after{
+  content:"";position:fixed;z-index:2147483647;left:50%;top:50%;width:28px;height:28px;margin:-14px;
+  border:2px solid rgba(232,197,102,.16);border-top-color:rgba(232,197,102,.84);border-radius:50%;
+  animation:kt-spin .75s linear infinite;pointer-events:none;
+}
+.app-section.page-enter-active{animation:kt-page-in var(--ui-motion-slow) var(--ui-ease) both;}
+.modal-card{animation:kt-window-in var(--ui-motion) var(--ui-ease) both;}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
+}
+
+
+/* ================================================================
+   FINAL V6: workspace chrome, scroll ownership, interaction motion
+   ================================================================ */
+:root{
+  --ui-motion-drag:0ms;
+  --ui-window-border:rgba(224,214,194,.18);
+}
+
+/* Dead-state overlay stays readable without washing out the token art. */
+.map-token .token-dead-red,.player-map-token .token-dead-red{
+  opacity:.44!important;
+  background:rgba(154,18,18,.34)!important;
+}
+.map-token .token-dead-skull,.player-map-token .token-dead-skull{
+  opacity:.46!important;
+}
+
+/* One outer window -> one chrome strip -> one scroll owner. */
+@media (min-width:781px){
+  body.map-page #map-vtt>.map-toolbar,
+  body.map-page #map-vtt>.initiative-panel,
+  body.map-page #map-vtt>.map-viewer-window{
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    justify-content:flex-start!important;
+    overflow:hidden!important;
+    padding:0!important;
+    margin:0!important;
+    box-sizing:border-box!important;
+    border:1px solid var(--ui-window-border)!important;
+    background-clip:padding-box!important;
+  }
+
+  body.map-page #map-vtt>.map-toolbar>.workspace-chrome,
+  body.map-page #map-vtt>.initiative-panel>.workspace-chrome,
+  body.map-page #map-vtt>.map-viewer-window>.workspace-chrome{
+    flex:0 0 38px!important;
+    width:100%!important;
+    height:38px!important;
+    min-height:38px!important;
+    margin:0!important;
+    padding:0 10px!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  body.map-page #map-vtt>.map-toolbar>.toolbar-body{
+    flex:1 1 auto!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:auto!important;
+    overflow:auto!important;
+    overflow-x:hidden!important;
+    padding:0!important;
+    scrollbar-gutter:stable!important;
+    overscroll-behavior:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  body.map-page #map-vtt>.map-toolbar>.toolbar-body>.tool-group{
+    margin:0!important;
+    padding:10px 12px!important;
+  }
+
+  body.map-page #map-vtt>.initiative-panel>.initiative-body{
+    display:flex!important;
+    flex:1 1 auto!important;
+    flex-direction:column!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:auto!important;
+    overflow:hidden!important;
+    padding:0!important;
+  }
+  body.map-page #map-vtt>.initiative-panel .initiative-panel-header{
+    flex:0 0 auto!important;
+    margin:0!important;
+    padding:10px 12px 8px!important;
+  }
+  body.map-page #map-vtt>.initiative-panel .initiative-panel-round{
+    flex:0 0 auto!important;
+    margin:0!important;
+    padding:8px 12px!important;
+  }
+  body.map-page #map-vtt>.initiative-panel .initiative-panel-list{
+    flex:1 1 auto!important;
+    min-height:0!important;
+    height:auto!important;
+    overflow:auto!important;
+    overflow-x:hidden!important;
+    margin:0!important;
+    padding:0 12px 12px!important;
+    scrollbar-gutter:stable!important;
+    overscroll-behavior:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+
+  body.map-page #map-vtt>.map-viewer-window>.map-stage-wrap{
+    position:absolute!important;
+    left:0!important;
+    right:0!important;
+    top:38px!important;
+    bottom:0!important;
+    width:auto!important;
+    height:auto!important;
+    min-width:0!important;
+    min-height:0!important;
+    margin:0!important;
+    padding:10px!important;
+    box-sizing:border-box!important;
+    overflow:auto!important;
+    scrollbar-gutter:stable!important;
+    overscroll-behavior:contain!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+
+  /* During direct manipulation there is no interpolation lag. The release state
+     still animates normally, keeping dragging and resizing crisp instead of rubbery. */
+  body.map-page #map-vtt>.is-dragging,
+  body.map-page #map-vtt>.is-resizing{
+    transition:none!important;
+    will-change:left,top,width,height!important;
+  }
+  body.map-page #map-vtt>.is-dragging>.workspace-chrome{cursor:grabbing!important;}
+
+  /* Resize handles are always children of their own window and never sticky. */
+  body.map-page #map-vtt>.map-toolbar>.panel-resize-handle,
+  body.map-page #map-vtt>.initiative-panel>.panel-resize-handle,
+  body.map-page #map-vtt>.map-viewer-window>.panel-resize-handle{
+    position:absolute!important;
+    z-index:12000!important;
+    display:block!important;
+    pointer-events:auto!important;
+    margin:0!important;
+    padding:0!important;
+    background:transparent!important;
+  }
+  body.map-page #map-vtt>.map-toolbar>.panel-resize-handle.edge-left,
+  body.map-page #map-vtt>.initiative-panel>.panel-resize-handle.edge-left,
+  body.map-page #map-vtt>.map-viewer-window>.panel-resize-handle.edge-left{left:-5px!important;top:8px!important;bottom:8px!important;width:10px!important;height:auto!important;cursor:ew-resize!important;}
+  body.map-page #map-vtt>.map-toolbar>.panel-resize-handle.edge-right,
+  body.map-page #map-vtt>.initiative-panel>.panel-resize-handle.edge-right,
+  body.map-page #map-vtt>.map-viewer-window>.panel-resize-handle.edge-right{right:-5px!important;top:8px!important;bottom:8px!important;width:10px!important;height:auto!important;cursor:ew-resize!important;}
+  body.map-page #map-vtt>.map-toolbar>.panel-resize-handle.edge-top,
+  body.map-page #map-vtt>.initiative-panel>.panel-resize-handle.edge-top,
+  body.map-page #map-vtt>.map-viewer-window>.panel-resize-handle.edge-top{left:8px!important;right:8px!important;top:-5px!important;width:auto!important;height:10px!important;cursor:ns-resize!important;}
+  body.map-page #map-vtt>.map-toolbar>.panel-resize-handle.edge-bottom,
+  body.map-page #map-vtt>.initiative-panel>.panel-resize-handle.edge-bottom,
+  body.map-page #map-vtt>.map-viewer-window>.panel-resize-handle.edge-bottom{left:8px!important;right:8px!important;bottom:-5px!important;width:auto!important;height:10px!important;cursor:ns-resize!important;}
+  body.map-page #map-vtt>.map-toolbar>.panel-resize-handle.corner-nw,
+  body.map-page #map-vtt>.initiative-panel>.panel-resize-handle.corner-nw,
+  body.map-page #map-vtt>.map-viewer-window>.panel-resize-handle.corner-nw{left:-6px!important;top:-6px!important;width:16px!important;height:16px!important;cursor:nwse-resize!important;}
+  body.map-page #map-vtt>.map-toolbar>.panel-resize-handle.corner-ne,
+  body.map-page #map-vtt>.initiative-panel>.panel-resize-handle.corner-ne,
+  body.map-page #map-vtt>.map-viewer-window>.panel-resize-handle.corner-ne{right:-6px!important;top:-6px!important;width:16px!important;height:16px!important;cursor:nesw-resize!important;}
+  body.map-page #map-vtt>.map-toolbar>.panel-resize-handle.corner-sw,
+  body.map-page #map-vtt>.initiative-panel>.panel-resize-handle.corner-sw,
+  body.map-page #map-vtt>.map-viewer-window>.panel-resize-handle.corner-sw{left:-6px!important;bottom:-6px!important;width:16px!important;height:16px!important;cursor:nesw-resize!important;}
+  body.map-page #map-vtt>.map-toolbar>.panel-resize-handle.corner-se,
+  body.map-page #map-vtt>.initiative-panel>.panel-resize-handle.corner-se,
+  body.map-page #map-vtt>.map-viewer-window>.panel-resize-handle.corner-se{right:-6px!important;bottom:-6px!important;width:16px!important;height:16px!important;cursor:nwse-resize!important;}
+}
+
+/* Workspace lifecycle motion. */
+@keyframes kt-workspace-in{from{opacity:0;transform:translateY(6px) scale(.992)}to{opacity:1;transform:none}}
+@keyframes kt-minimize-in{from{opacity:.78}to{opacity:1}}
+body.map-page #map-vtt>.map-toolbar:not(.is-minimized),
+body.map-page #map-vtt>.initiative-panel:not(.is-minimized),
+body.map-page #map-vtt>.map-viewer-window:not(.is-minimized){animation:kt-workspace-in var(--ui-motion-slow) var(--ui-ease) both;}
+body.map-page #map-vtt>.is-minimized{animation:kt-minimize-in var(--ui-motion-fast) ease both;}
+body.map-page #map-vtt>.map-toolbar,
+body.map-page #map-vtt>.initiative-panel,
+body.map-page #map-vtt>.map-viewer-window{
+  transition:left var(--ui-motion) var(--ui-ease),top var(--ui-motion) var(--ui-ease),
+    width var(--ui-motion) var(--ui-ease),height var(--ui-motion) var(--ui-ease),
+    box-shadow var(--ui-motion) var(--ui-ease),opacity var(--ui-motion) ease!important;
+}
+body.map-page #map-vtt>.is-dragging,body.map-page #map-vtt>.is-resizing{animation:none!important;}
+
+@media (prefers-reduced-motion:reduce){
+  body.map-page #map-vtt>.map-toolbar,body.map-page #map-vtt>.initiative-panel,body.map-page #map-vtt>.map-viewer-window{animation:none!important;}
+}
+
+
+/* Prevent legacy sizing transitions from affecting first-frame geometry measurement. */
+@media (min-width:781px){
+  body.map-page #map-vtt.workspace-initializing>.map-toolbar,
+  body.map-page #map-vtt.workspace-initializing>.initiative-panel,
+  body.map-page #map-vtt.workspace-initializing>.map-viewer-window{
+    transition:none!important;
+    animation:none!important;
+  }
+}
+
+
+/* ================================================================
+   FINAL V7: restrained motion, compact workspace chrome, live player refresh
+   ================================================================ */
+:root{
+  --ui-space-0:2px;
+  --ui-space-1:5px;
+  --ui-space-2:8px;
+  --ui-space-3:12px;
+  --ui-space-4:16px;
+  --ui-space-5:20px;
+  --ui-motion-fast:140ms;
+  --ui-motion:220ms;
+  --ui-motion-slow:320ms;
+  --ui-ease:cubic-bezier(.22,.72,.2,1);
+}
+
+/* Dead-state layers are intentionally subdued. The skull is 75% of the token. */
+.map-token .token-dead-red,.player-map-token .token-dead-red{
+  background:rgba(150,14,14,.30)!important;
+  opacity:.48!important;
+  mix-blend-mode:normal!important;
+}
+.map-token .token-dead-skull,.player-map-token .token-dead-skull{
+  opacity:.42!important;
+}
+
+/* One consistent spacing rhythm across controls and cards. */
+.tool-group,.combat-toolbar,.toolbar,.modal-actions,.character-actions,.combat-manager-add,.zoom-controls{gap:var(--ui-space-2)!important;}
+.tool-group{padding:var(--ui-space-3)!important;margin:0!important;}
+.tool-title{margin-bottom:var(--ui-space-2)!important;}
+.field{gap:5px!important;margin-bottom:var(--ui-space-2)!important;}
+button,input,select,textarea{transition:transform var(--ui-motion-fast) var(--ui-ease),opacity var(--ui-motion-fast) ease,background-color var(--ui-motion) ease,border-color var(--ui-motion) ease,box-shadow var(--ui-motion) ease,color var(--ui-motion) ease!important;}
+button:hover{transform:translateY(-1px);}
+button:active{transform:translateY(0) scale(.985);}
+
+/* Minimized windows collapse their complete surface, not only their content. */
+body.map-page #map-vtt>.map-toolbar.is-minimized,
+body.map-page #map-vtt>.initiative-panel.is-minimized,
+body.map-page #map-vtt>.map-viewer-window.is-minimized{
+  height:38px!important;
+  min-height:38px!important;
+  max-height:38px!important;
+  overflow:hidden!important;
+  background:var(--ui-window-bg)!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.28)!important;
+}
+body.map-page #map-vtt>.map-toolbar.is-minimized>.workspace-panel-body,
+body.map-page #map-vtt>.initiative-panel.is-minimized>.workspace-panel-body,
+body.map-page #map-vtt>.map-viewer-window.is-minimized>.map-stage-wrap,
+body.map-page #map-vtt>.map-viewer-window.is-minimized>.map-viewer-body{
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+  height:0!important;
+  min-height:0!important;
+  max-height:0!important;
+  overflow:hidden!important;
+  padding:0!important;
+  margin:0!important;
+}
+body.map-page #map-vtt>.map-toolbar:not(.is-minimized),
+body.map-page #map-vtt>.initiative-panel:not(.is-minimized),
+body.map-page #map-vtt>.map-viewer-window:not(.is-minimized){
+  overflow:hidden!important;
+}
+
+/* Page transitions feel deliberate without making the UI sluggish. */
+.app-section.page-enter{opacity:0;transform:translate3d(0,8px,0);filter:blur(1.5px);}
+.app-section.page-enter-active{animation:kt-page-in var(--ui-motion-slow) var(--ui-ease) both;}
+@keyframes kt-page-in{from{opacity:0;transform:translate3d(0,8px,0);filter:blur(1.5px)}to{opacity:1;transform:none;filter:none}}
+.modal-backdrop{animation:kt-modal-in var(--ui-motion) var(--ui-ease) both!important;}
+.modal-card{animation:kt-modal-card-in var(--ui-motion-slow) var(--ui-ease) both;}
+@keyframes kt-modal-in{from{opacity:0}to{opacity:1}}
+@keyframes kt-modal-card-in{from{opacity:0;transform:translate3d(0,8px,0) scale(.985)}to{opacity:1;transform:none}}
+
+/* Prevent accidental nested scrolling in the three floating workspaces. */
+body.map-page #map-vtt>.map-toolbar>.toolbar-body,
+body.map-page #map-vtt>.initiative-panel .initiative-panel-list,
+body.map-page #map-vtt>.map-viewer-window>.map-stage-wrap{
+  scrollbar-gutter:stable both-edges!important;
+  overscroll-behavior:contain!important;
+}
+body.map-page #map-vtt>.map-toolbar>.toolbar-body{overflow-y:auto!important;overflow-x:hidden!important;}
+body.map-page #map-vtt>.initiative-panel .initiative-panel-list{overflow-y:auto!important;overflow-x:hidden!important;}
+body.map-page #map-vtt>.map-viewer-window>.map-stage-wrap{overflow:auto!important;}
+
+/* Loading state stays visible only during real startup, while normal page scrolling remains enabled. */
+body:not(.app-ready)::after{animation:kt-loading-pulse 1.15s ease-in-out infinite!important;}
+@keyframes kt-loading-pulse{0%,100%{opacity:.45;transform:translate(-50%,-50%) scale(.96)}50%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important;}
+}
+/* Player/GM token identity labels and unified player pan model. */
+.map-token .token-name-label,.player-map-token .token-name-label{position:absolute!important;left:50%!important;top:calc(100% + 5px)!important;transform:translateX(-50%)!important;max-width:180%!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important;padding:2px 6px!important;border:1px solid rgba(235,210,145,.22)!important;border-radius:5px!important;background:rgba(7,8,11,.84)!important;color:#eee!important;font-size:clamp(9px,calc(var(--token-size,40px)*.18),15px)!important;line-height:1.15!important;font-weight:700!important;letter-spacing:.01em!important;text-shadow:0 1px 2px #000!important;pointer-events:none!important;z-index:30!important;}
+.player-map-stage{overflow:visible!important;}
+.player-map-stage-wrap{overflow:hidden!important;touch-action:none!important;}
+.player-map-stage-wrap.is-panning{cursor:grabbing!important;}
+
+/* ================================================================
+   COMBAT EXTENSION REFINEMENT
+   Compact, readable cards with stable control sizing.
+   ================================================================ */
+.combat-list{display:grid;gap:12px;}
+.combatant-card{padding:14px 16px!important;min-width:0;overflow:hidden;}
+.combatant-card.active{box-shadow:0 0 0 1px rgba(235,210,145,.28),0 8px 24px rgba(0,0,0,.24)!important;}
+.combatant-card.is-dead{opacity:.9;}
+.combatant-header{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:12px!important;min-width:0;}
+.combatant-identity{min-width:0;overflow:hidden;}
+.combatant-identity h2{font-size:clamp(1rem,1.8vw,1.28rem)!important;line-height:1.12!important;margin:3px 0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.combatant-head-actions{display:flex;align-items:center;gap:7px;flex:0 0 auto;}
+.combatant-init-badge{font-size:.7rem;font-weight:800;letter-spacing:.05em;padding:5px 7px;border:1px solid rgba(235,210,145,.2);border-radius:5px;white-space:nowrap;}
+.combatant-head-actions button,.combatant-actions button{min-height:30px!important;height:30px!important;padding:4px 8px!important;font-size:.72rem!important;white-space:nowrap;}
+.combatant-token-row{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:9px;margin:11px 0;padding:8px 9px;border:1px solid rgba(235,210,145,.12);border-radius:8px;background:rgba(0,0,0,.15);}
+.combatant-token-mini{width:42px;height:42px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:#17191d;border:1px solid rgba(235,210,145,.2);font-weight:900;}
+.combatant-token-mini img{width:100%;height:100%;object-fit:cover;display:block;}
+.combatant-token-copy{min-width:0;display:flex;flex-direction:column;gap:2px;overflow:hidden;}
+.combatant-token-copy strong{font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.combatant-token-btn{min-height:29px!important;height:29px!important;padding:4px 8px!important;font-size:.68rem!important;}
+.combatant-stats-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;}
+.combatant-stats-grid label{display:flex;flex-direction:column;gap:4px;font-size:.62rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted,#999);font-weight:800;min-width:0;}
+.combatant-stats-grid input{width:100%;min-width:0;height:31px!important;min-height:31px!important;padding:4px 6px!important;font-size:.78rem!important;box-sizing:border-box;}
+.combatant-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
+.combatant-actions .toggle-dead{margin-left:auto;}
+.token-editor-note{padding:9px 11px;border:1px solid rgba(235,210,145,.13);border-radius:7px;background:rgba(235,210,145,.035);display:flex;flex-direction:column;gap:3px;}
+.assign-token-grid{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))!important;max-height:55vh;overflow:auto;padding:4px;}
+
+/* Keep the map switcher anchored in one stable header zone. */
+.map-header{display:grid!important;grid-template-columns:minmax(240px,1fr) minmax(420px,auto)!important;align-items:start!important;gap:18px!important;}
+.map-header>.toolbar{display:grid!important;grid-template-columns:repeat(2,max-content) minmax(150px,190px) repeat(4,max-content)!important;justify-content:end!important;align-items:center!important;gap:7px!important;min-width:0!important;}
+.map-header #map-select{width:190px!important;min-width:190px!important;max-width:190px!important;height:34px!important;box-sizing:border-box!important;}
+.map-header>.toolbar button{white-space:nowrap;}
+
+@media(max-width:1050px) and (min-width:781px){
+  .map-header{grid-template-columns:1fr!important;}
+  .map-header>.toolbar{justify-content:start!important;}
+}
+@media(max-width:780px){
+  .combatant-stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .combatant-actions .toggle-dead{margin-left:0;}
+  .combatant-head-actions .combatant-init-badge{display:none;}
+  .combatant-token-row{grid-template-columns:clamp(24px,2.4vw,32px) minmax(0,1fr);}
+  .combatant-token-btn{grid-column:1/-1;width:100%;}
+  .map-header>.toolbar{display:flex!important;flex-wrap:wrap!important;justify-content:flex-start!important;}
+  .map-header #map-select{flex:1 1 180px!important;width:auto!important;min-width:150px!important;max-width:none!important;}
+}
+
+/* ================================================================
+   COMBAT EXTENSION: COMPACT COMMAND-CARD UI
+   ================================================================ */
+.combatant-card{padding:12px 14px!important;border-radius:10px!important;}
+.combatant-header{gap:10px!important;align-items:center!important;}
+.combatant-name-line{display:flex;align-items:center;gap:9px;min-width:0;}
+.combatant-name-block{min-width:0;overflow:hidden;}
+.combatant-token-avatar{width:clamp(24px,2.4vw,32px)!important;height:clamp(24px,2.4vw,32px)!important;flex:0 0 clamp(24px,2.4vw,32px);border-radius:7px!important;background:rgba(0,0,0,.32)!important;border-color:rgba(235,210,145,.25)!important;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);}
+.combatant-token-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+.combatant-token-avatar span{font-size:.78rem;}
+.combatant-identity h2{font-size:1rem!important;line-height:1.05!important;margin:1px 0!important;}
+.combatant-token-caption{font-size:.62rem!important;line-height:1.1!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.combatant-faction{margin-left:43px;margin-top:-1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px;}
+.combatant-head-actions{gap:5px!important;}
+.combatant-head-actions button,.combatant-actions button,.combatant-token-btn{border-radius:6px!important;border:1px solid rgba(235,210,145,.16)!important;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(0,0,0,.18))!important;box-shadow:0 1px 0 rgba(255,255,255,.035) inset!important;font-weight:750!important;letter-spacing:.01em;transition:transform .14s ease,background .14s ease,border-color .14s ease,box-shadow .14s ease!important;}
+.combatant-head-actions button:hover,.combatant-actions button:hover,.combatant-token-btn:hover{transform:translateY(-1px);border-color:rgba(235,210,145,.32)!important;box-shadow:0 3px 10px rgba(0,0,0,.2)!important;}
+.combatant-token-btn{min-height:28px!important;height:28px!important;padding:3px 8px!important;font-size:.66rem!important;color:var(--text,#eee)!important;}
+.combatant-head-actions .remove{min-height:28px!important;height:28px!important;padding:3px 8px!important;font-size:.66rem!important;}
+.combatant-actions{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr)) minmax(90px,1.2fr)!important;gap:5px!important;margin-top:8px!important;padding-top:8px;border-top:1px solid rgba(235,210,145,.08);}
+.combatant-actions button{width:100%;min-width:0!important;height:28px!important;min-height:28px!important;padding:3px 5px!important;font-size:.64rem!important;}
+.combatant-actions .toggle-dead{margin-left:0!important;}
+.combatant-stats-grid{gap:6px!important;margin-top:8px;}
+.combatant-stats-grid label{font-size:.58rem!important;gap:3px!important;}
+.combatant-stats-grid input{height:29px!important;min-height:29px!important;border-radius:5px!important;font-size:.74rem!important;}
+.combatant-init-badge{font-size:.62rem!important;padding:4px 6px!important;border-radius:5px!important;}
+
+/* Main combat controls are grouped by intent rather than generic button sizing. */
+.combat-toolbar{gap:6px!important;}
+.combat-toolbar button{min-height:31px;padding:5px 9px;font-size:.72rem;border-radius:6px;}
+.combat-toolbar #add{box-shadow:0 4px 14px rgba(194,154,67,.12);}
+.combat-toolbar #start{font-weight:800;}
+.combat-toolbar #save-enc{opacity:.86;}
+
+@media(max-width:780px){
+  .combatant-header{align-items:flex-start!important;}
+  .combatant-head-actions{flex-wrap:wrap;justify-content:flex-end;max-width:170px;}
+  .combatant-faction{margin-left:43px;max-width:calc(100vw - 110px);}
+  .combatant-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+  .combatant-actions .toggle-dead{grid-column:1/-1;}
+  .combatant-token-btn{order:2;}
+}
+
+/* ================================================================
+   COMBAT EXTENSION: RESPONSIVE TOKEN + LIVE EDIT UI
+   Token preview intentionally stays useful but never dominates the card.
+   Keep the range in CSS so JS rendering remains presentation-agnostic.
+   ================================================================ */
+.combatant-token-avatar{
+  width:clamp(36px, 4.5vw, 48px)!important;
+  height:clamp(36px, 4.5vw, 48px)!important;
+  flex:0 0 clamp(36px, 4.5vw, 48px)!important;
+}
+.combatant-name-line{gap:10px!important;}
+.combatant-faction{margin-left:calc(clamp(36px, 4.5vw, 48px) + 10px)!important;}
+.combatant-edit-btn{min-height:28px!important;height:28px!important;padding:3px 8px!important;font-size:.66rem!important;}
+.combatant-edit-modal{width:min(680px,94vw);max-height:88vh;overflow:auto;}
+.combatant-edit-grid textarea{width:100%;resize:vertical;box-sizing:border-box;}
+@media(max-width:780px){
+  .combatant-token-avatar{width:38px!important;height:38px!important;flex-basis:38px!important;}
+  .combatant-faction{margin-left:48px!important;}
+  .combatant-head-actions{flex-wrap:wrap;justify-content:flex-end;}
+}
+
+/* ============================================================================
+   FINAL GOTHIC GLASS UX PASS
+   Consistent surfaces, restrained translucency, deliberate motion, and readable
+   focus states across the application. Avoids changing the functional layout.
+   ============================================================================ */
+:root{
+  --ui-glass:rgba(20,17,17,.72);
+  --ui-glass-strong:rgba(12,10,11,.86);
+  --ui-brass:rgba(235,210,145,.78);
+  --ui-line:rgba(235,210,145,.16);
+  --ui-line-hot:rgba(235,210,145,.34);
+  --ui-shadow:0 16px 42px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,244,210,.035);
+  --ui-ease:cubic-bezier(.18,.72,.2,1);
+}
+html{scroll-behavior:smooth;}
+body{background:radial-gradient(circle at 50% -8%,rgba(112,27,27,.08),transparent 34%),#090a0d;}
+::selection{background:rgba(235,210,145,.20);color:#fff5d8;}
+button,input,select,textarea{font-family:inherit;}
+button{box-shadow:0 4px 14px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.025);}
+button:hover{border-color:var(--ui-line-hot)!important;box-shadow:0 7px 18px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.04)!important;}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid rgba(235,210,145,.48)!important;outline-offset:2px!important;}
+.card,.modal-card,.app-section>.section-header,.dashboard-row{
+  box-shadow:var(--ui-shadow)!important;
+}
+.badge,.tag-chip{box-shadow:inset 0 1px 0 rgba(255,255,255,.03),0 4px 12px rgba(0,0,0,.14);}
+.section-header h1,.section-header h2{letter-spacing:.015em;}
+.eyebrow{letter-spacing:.16em!important;}
+input,select,textarea{box-shadow:inset 0 1px 0 rgba(255,255,255,.025),0 3px 12px rgba(0,0,0,.12)!important;}
+input:hover,select:hover,textarea:hover{border-color:rgba(235,210,145,.24)!important;}
+::-webkit-scrollbar{width:9px;height:9px;}
+::-webkit-scrollbar-track{background:rgba(4,5,6,.38);}
+::-webkit-scrollbar-thumb{background:rgba(178,155,103,.22);border:2px solid rgba(4,5,6,.38);border-radius:999px;}
+::-webkit-scrollbar-thumb:hover{background:rgba(235,210,145,.36);}
+.modal-backdrop{backdrop-filter:blur(8px);}
+
+/* v4.1 workspace fixes: Sound Mixer is a first-class resizable Game Room workspace. */
+body.map-page #map-vtt > #sound-mixer-window { position:absolute !important; box-sizing:border-box !important; overflow:visible !important; min-width:170px !important; min-height:130px !important; }
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle { position:absolute !important; display:block !important; z-index:1000 !important; opacity:.55 !important; pointer-events:auto !important; }
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle.edge-left,
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle.edge-right { top:10px !important; bottom:10px !important; width:14px !important; }
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle.edge-left { left:-7px !important; cursor:ew-resize !important; }
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle.edge-right { right:-7px !important; cursor:ew-resize !important; }
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle.edge-top,
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle.edge-bottom { left:10px !important; right:10px !important; height:14px !important; }
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle.edge-top { top:-7px !important; cursor:ns-resize !important; }
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle.edge-bottom { bottom:-7px !important; cursor:ns-resize !important; }
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle.corner-nw,
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle.corner-ne,
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle.corner-sw,
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle.corner-se { width:22px !important; height:22px !important; }
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle.corner-nw { left:-8px !important; top:-8px !important; cursor:nwse-resize !important; }
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle.corner-ne { right:-8px !important; top:-8px !important; cursor:nesw-resize !important; }
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle.corner-sw { left:-8px !important; bottom:-8px !important; cursor:nesw-resize !important; }
+body.map-page #map-vtt > #sound-mixer-window .panel-resize-handle.corner-se { right:-8px !important; bottom:-8px !important; cursor:nwse-resize !important; }
+body.map-page #map-vtt > #sound-mixer-window.is-minimized { min-height:38px !important; height:38px !important; overflow:hidden !important; }
+body.map-page #map-vtt > #sound-mixer-window.is-minimized .panel-resize-handle { display:none !important; }
+body.map-page #map-vtt > #sound-mixer-window .sound-mixer-body { min-height:0; overflow:auto; }
+
+/* Centered title with chapter groups on both sides. */
+#main-navigation { position:sticky; isolation:isolate; display:grid !important; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center; min-width:0; }
+#main-navigation .nav-left, #main-navigation .nav-right { display:flex; align-items:center; gap:2px; min-width:0; overflow:hidden; }
+#main-navigation .nav-left { justify-content:flex-end; }
+#main-navigation .nav-right { justify-content:flex-start; }
+#main-navigation .brand { grid-column:2; grid-row:1; margin:0 18px !important; justify-content:center; flex-direction:column; gap:0; line-height:1; white-space:nowrap; z-index:2; }
+#main-navigation .brand .ic-brand { width:24px; height:24px; margin-top:3px; }
+#main-navigation .nav-button { white-space:nowrap; flex:0 0 auto; }
+#main-navigation .nav-spacer { display:none !important; }
+@media (max-width:1100px){#main-navigation{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)}#main-navigation .nav-button{padding:8px 8px;font-size:.82rem}#main-navigation .brand{margin:0 8px!important;font-size:.85rem}}
+@media (max-width:760px){#main-navigation{display:flex!important;overflow-x:auto;justify-content:flex-start}#main-navigation .brand{order:-1;flex:0 0 auto}.nav-left,.nav-right{overflow:visible!important}.nav-left{order:1}.nav-right{order:2}}
+
+.map-lib-card.is-deactivated { opacity:.58; filter:saturate(.55); }
+.map-lib-card.is-deactivated .map-lib-overlay { background:rgba(20,20,20,.85); }
+.map-lib-status { display:flex; gap:6px; align-items:center; margin-top:6px; }
+.map-lib-status .badge { font-size:.68rem; }
+.token-showcase-preview { min-height:150px; display:grid; place-items:center; position:relative; overflow:hidden; background:radial-gradient(circle,rgba(190,160,95,.12),transparent 68%); }
+.token-showcase-ring { width:112px; height:112px; border-radius:50%; display:grid; place-items:center; border:1px solid rgba(190,160,95,.45); background:rgba(0,0,0,.28); overflow:hidden; box-shadow:0 0 25px rgba(0,0,0,.4); }
+.token-showcase-ring img { width:100%; height:100%; object-fit:contain; }
+.token-showcase-ring span { font-size:2.5rem; color:var(--accent-bright); }
+.game-room-workspace-settings { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.workspace-setting { display:flex; justify-content:space-between; gap:18px; align-items:center; padding:13px 15px; border:1px solid var(--border); background:rgba(255,255,255,.025); border-radius:6px; }
+.workspace-setting span { display:grid; gap:3px; }.workspace-setting small { color:var(--muted); }
+@media(max-width:700px){.game-room-workspace-settings{grid-template-columns:1fr}}
+/* Final mixer sizing correction: remove the legacy max-height cap while the workspace is resizable. */
+body.map-page #map-vtt > #sound-mixer-window:not(.is-minimized) { max-height:none !important; overflow:visible !important; }
+body.map-page #map-vtt > #sound-mixer-window:not(.is-minimized) .sound-mixer-body { max-height:none !important; height:calc(100% - 45px) !important; }
+body.map-page #map-vtt > #sound-mixer-window:not(.is-minimized) .sound-layer-list { min-height:0; }

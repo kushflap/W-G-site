@@ -1,0 +1,310 @@
+/*
+  Mobile and tablet refinements.
+  Loaded last so these rules safely override desktop component styles.
+*/
+
+/* Better touch behavior and prevent accidental horizontal overflow */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+body {
+  min-width: 320px;
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+button, select, input, textarea {
+  touch-action: manipulation;
+}
+button {
+  min-height: 40px;
+}
+input, select, textarea {
+  min-height: 42px;
+  font-size: 16px; /* Prevents iOS Safari auto-zoom on focus */
+}
+img {
+  max-width: 100%;
+}
+
+/* Navigation remains usable on narrow screens */
+#main-navigation {
+  width: 100%;
+  gap: 5px;
+  padding-left: 12px;
+  padding-right: 12px;
+  scrollbar-width: thin;
+}
+#main-navigation .nav-button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  min-height: 40px;
+}
+.nav-spacer { min-width: 8px; }
+
+/* Keep page content inside the viewport */
+#main-content {
+  width: 100%;
+  max-width: 1500px;
+  padding: clamp(12px, 3vw, 26px);
+}
+.section-header {
+  min-width: 0;
+}
+.section-header > * {
+  min-width: 0;
+}
+.section-header h1 {
+  overflow-wrap: anywhere;
+}
+
+/* Combat cards and stat controls */
+.combatant-card {
+  min-width: 0;
+}
+.combatant-header {
+  align-items: flex-start;
+}
+.combatant-title {
+  min-width: 0;
+}
+.combatant-title h2 {
+  overflow-wrap: anywhere;
+}
+.combatant-header .toolbar {
+  justify-content: flex-end;
+}
+.stat-row {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.stat {
+  min-width: 0;
+}
+.stat input {
+  min-width: 0;
+  padding-left: 7px;
+  padding-right: 7px;
+}
+.combatant-card > .toolbar {
+  align-items: flex-end;
+}
+.quick-buttons {
+  min-width: 170px;
+}
+.initiative {
+  min-width: 90px;
+}
+
+/* Character library */
+.character-card {
+  min-width: 0;
+}
+.character-card > div:first-child {
+  min-width: 0;
+}
+.character-card h2 {
+  overflow-wrap: anywhere;
+}
+.character-actions {
+  justify-content: flex-end;
+}
+
+/* Modals: fit small screens and allow internal scrolling */
+.modal-backdrop {
+  padding: 10px;
+  align-items: center;
+}
+.modal {
+  width: min(760px, 100%);
+  max-height: min(90dvh, 900px);
+}
+.modal-header, .modal-footer {
+  position: sticky;
+  z-index: 2;
+  background: var(--panel);
+}
+.modal-header { top: 0; }
+.modal-footer { bottom: 0; }
+
+/* Builder rows and filters */
+.builder-panel {
+  min-width: 0;
+}
+.builder-search {
+  min-width: 0;
+}
+.item-row {
+  min-width: 0;
+}
+.item-info {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.item-row button {
+  flex: 0 0 auto;
+}
+
+/* Small tablets */
+@media (max-width: 900px) {
+  .grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .builder-layout { grid-template-columns: 1fr; }
+}
+
+/* Phones */
+@media (max-width: 640px) {
+  #main-navigation {
+    position: sticky;
+    top: 0;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+  #main-navigation .brand {
+    display: none;
+  }
+  #main-navigation .nav-spacer {
+    flex: 0 0 8px;
+  }
+
+  #main-content {
+    padding: 13px 11px 28px;
+  }
+  .section-header {
+    gap: 12px;
+    margin-bottom: 15px;
+  }
+  .section-header .toolbar,
+  .section-header > .toolbar {
+    width: 100%;
+  }
+  .section-header .toolbar button {
+    flex: 1 1 auto;
+  }
+
+  .card {
+    padding: 13px;
+  }
+  .grid-2, .grid-3, .field-row {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 9px;
+  }
+  .combatant-header {
+    flex-direction: column;
+  }
+  .combatant-header > .toolbar {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .combatant-card > .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .combatant-card > .toolbar > div {
+    width: 100%;
+    max-width: none;
+  }
+  .initiative {
+    max-width: none;
+  }
+  .quick-buttons {
+    width: 100%;
+    min-width: 0;
+  }
+  .combat-toolbar {
+    width: 100%;
+  }
+  .combat-toolbar button {
+    flex: 1 1 calc(50% - 8px);
+  }
+
+  .character-card {
+    grid-template-columns: 1fr;
+  }
+  .character-actions {
+    justify-content: stretch;
+  }
+  .character-actions button {
+    flex: 1 1 calc(50% - 6px);
+  }
+
+  .builder-search {
+    grid-template-columns: 1fr;
+  }
+  .item-row {
+    align-items: flex-start;
+  }
+  .item-row button {
+    min-width: 76px;
+  }
+
+  .modal-backdrop {
+    padding: 0;
+    align-items: end;
+  }
+  .modal {
+    width: 100%;
+    max-height: 92dvh;
+    border-radius: 12px 12px 0 0;
+    border-bottom: 0;
+  }
+  .modal-body {
+    padding: 14px;
+  }
+  .modal-footer {
+    flex-wrap: wrap;
+  }
+  .modal-footer button {
+    flex: 1 1 auto;
+  }
+
+  #toast-root {
+    left: 10px;
+    right: 10px;
+    bottom: max(12px, env(safe-area-inset-bottom));
+  }
+  .toast {
+    text-align: center;
+  }
+}
+
+/* Very narrow phones */
+@media (max-width: 380px) {
+  #main-content {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+  .stat-row {
+    gap: 8px;
+  }
+  .combat-toolbar button {
+    flex-basis: 100%;
+  }
+  .character-actions button {
+    flex-basis: 100%;
+  }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+/* Dashboard / XP builder additions */
+@media (max-width: 700px) {
+  .dashboard-row .toolbar { width: 100%; }
+  .dashboard-row .toolbar > button { flex: 1; }
+  .xp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .builder-character-bar { grid-template-columns: 1fr; }
+}

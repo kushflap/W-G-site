@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0807">
+  <title>Kousha's Table Top</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components/buttons.css">
+  <link rel="stylesheet" href="css/components/cards.css">
+  <link rel="stylesheet" href="css/components/inputs.css">
+  <link rel="stylesheet" href="css/components/modal.css">
+  <link rel="stylesheet" href="css/components/navigation.css">
+  <link rel="stylesheet" href="css/sections/combat.css">
+  <link rel="stylesheet" href="css/sections/characters.css">
+  <link rel="stylesheet" href="css/sections/builder.css">
+  <link rel="stylesheet" href="css/sections/dashboard.css">
+  <link rel="stylesheet" href="css/mobile.css">
+  <link rel="stylesheet" href="css/sections/map.css">
+  <link rel="stylesheet" href="css/sections/sounds.css">
+  <link rel="stylesheet" href="css/theme-40k.css">
+  <link rel="stylesheet" href="css/ux-polish.css">
+  <link rel="stylesheet" href="css/ui-refresh.css">
+</head>
+<body>
+  <!-- Icon sprite: angular, brass-stroked Imperial set -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <symbol id="i-aquila" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="miter" stroke-linecap="square"><path d="M12 7l2 3-2 11-2-11z"/><path d="M10 9C7 8.5 4 9.5 1.5 7c.8 5 4 8 8.5 8M14 9c3-.5 6 .5 8.5-2-.8 5-4 8-8.5 8"/><path d="M9.5 12.5C7.5 12.5 5.5 12 4 10.5M14.5 12.5C16.5 12.5 18.5 12 20 10.5"/><path d="M10 5.2L8.4 3.4M14 5.2l1.6-1.8"/><circle cx="12" cy="4.6" r="1.2"/></g></symbol>
+      <symbol id="i-sword" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M5 4l12 12M19 4L7 16"/><path d="M13 19l5-5M11 19L6 14"/><path d="M17 17l3 3M7 17l-3 3"/></g></symbol>
+      <symbol id="i-skull" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter"><path d="M12 3C7.6 3 4.5 6 4.5 10c0 2.4 1.1 4.1 2.5 5.1V19h10v-3.9c1.4-1 2.5-2.7 2.5-5.1 0-4-3.1-7-7.5-7z"/><path d="M10 19v-2.4M12 19v-2.4M14 19v-2.4"/></g><path fill="currentColor" d="M8.6 10.6h2.2l-.4 2.6H8.6zM13.2 10.6h2.2v2.6h-1.8z"/></symbol>
+      <symbol id="i-cog" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><circle cx="12" cy="12" r="5.6"/><circle cx="12" cy="12" r="2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/></g></symbol>
+      <symbol id="i-tome" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter" stroke-linecap="square"><path d="M5 3.5h12.5a1.5 1.5 0 0 1 1.5 1.5v15H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11M10 7.5h5M12.5 5v5"/></g></symbol>
+      <symbol id="i-map" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z"/><path d="M9 4v14M15 6v14"/></g></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></g></symbol>
+      <symbol id="i-expand" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></symbol>
+      <symbol id="i-quill" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter" stroke-linecap="square" d="M4 20l1-4L17 4l3 3L8 19zM14 7l3 3"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-shield" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter" d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6zM12 7v10"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter" stroke-linecap="square" d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v6M14 11v6"/></symbol>
+      <symbol id="i-cursor" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter" d="M5 3l14 8-6 2 4 7-3 1-4-7-5 4z"/></symbol>
+      <symbol id="i-pan" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></symbol>
+      <symbol id="i-pencil" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter" stroke-linecap="square" d="M4 20h16M6 16l9-9 3 3-9 9H6z"/></symbol>
+      <symbol id="i-fog" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter" stroke-linecap="square" d="M7 17a4 4 0 0 1 0-8 5 5 0 0 1 9.6-1A4 4 0 0 1 17 17zM5 20.5h9M9 22.5h9"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2 2M16.7 16.7l2 2M18.7 5.3l-2 2M7.3 16.7l-2 2"/></g></symbol>
+      <symbol id="i-dark" viewBox="0 0 24 24"><path fill="currentColor" fill-opacity=".85" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter" d="M4.5 4.5h15v15h-15z"/></symbol>
+      <symbol id="i-eraser" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter" stroke-linecap="square" d="M3 16l9-9 8 8-5 5H8zM8.5 11.5l8 8"/></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" d="M20 11a8 8 0 0 0-14-4L4 9M4 4v5h5M4 13a8 8 0 0 0 14 4l2-2M20 20v-5h-5"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" d="M4 7h16M4 12h16M4 17h16"/></symbol>
+      <symbol id="i-grip" viewBox="0 0 24 24"><g fill="currentColor"><rect x="7" y="5" width="3" height="3"/><rect x="14" y="5" width="3" height="3"/><rect x="7" y="10.5" width="3" height="3"/><rect x="14" y="10.5" width="3" height="3"/><rect x="7" y="16" width="3" height="3"/><rect x="14" y="16" width="3" height="3"/></g></symbol>
+      <symbol id="i-export" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="square" stroke-linejoin="miter" d="M12 4v11M7 11l5 5 5-5M4 20h16"/></symbol>
+      <symbol id="i-flame" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter" d="M12 2.5c.8 4 5 5.5 5 10.5a5 5 0 0 1-10 0c0-2.3 1.2-3.7 2.3-4.8.1 1.8.9 2.8 2 3 0-3-1-5.2.7-8.7z"/></symbol>
+      <symbol id="i-volume" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter" d="M4 10h4l5-4v12l-5-4H4z"/><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square" d="M16 9c1.6 1.6 1.6 4.4 0 6M18.8 6.5c3 3 3 8 0 11"/></symbol>
+      <symbol id="i-gem" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="miter" d="M12 2.5l4 6-4 13-4-13zM4.5 9.5L12 21.5l7.5-12M4.5 9.5h15"/></symbol>
+    </defs>
+  </svg>
+  <div id="app">
+    <header id="main-navigation"></header>
+    <main id="main-content">
+      <section id="home-section" class="app-section" hidden></section>
+      <section id="combat-section" class="app-section">
+        <div class="section-header"><div><div class="eyebrow">The Emperor protects</div><h1>Kousha's Table Top</h1><p class="muted">Consulting the machine spirits…</p></div></div>
+        <div class="card" style="padding:24px"><h2>Starting application</h2><p class="muted">If this message remains visible, the JavaScript application did not start. The diagnostic panel below will show why.</p></div>
+      </section>
+      <section id="characters-section" class="app-section" hidden></section>
+      <section id="builder-section" class="app-section" hidden></section>
+      <section id="dashboard-section" class="app-section" hidden></section>
+      <section id="map-section" class="app-section" hidden></section>
+      <section id="map-library-section" class="app-section" hidden></section>
+      <section id="token-library-section" class="app-section" hidden></section>
+      <section id="sounds-section" class="app-section" hidden></section>
+    </main>
+    <div id="modal-root"></div>
+    <div id="toast-root" aria-live="polite"></div>
+  </div>
+  <script>
+    window.__WG_APP_STARTED__ = false;
+    window.addEventListener("error", function(event) {
+      if (window.__WG_APP_STARTED__) return;
+      var root = document.getElementById("app");
+      if (!root) return;
+      var msg = event.error && (event.error.stack || event.error.message) || event.message || "Unknown JavaScript error";
+      root.insertAdjacentHTML("beforeend", '<div style="position:fixed;inset:auto 16px 16px 16px;z-index:9999;background:#15171c;border:1px solid #a94d4d;color:#e7e2d7;padding:18px;border-radius:8px;font-family:system-ui,sans-serif"><strong style="color:#d56b6b">Application startup error</strong><pre style="white-space:pre-wrap;overflow:auto;margin:10px 0 0">'+String(msg).replace(/&/g,"&amp;").replace(/</g,"&lt;")+'</pre></div>');
+    });
+    window.addEventListener("unhandledrejection", function(event) {
+      if (window.__WG_APP_STARTED__) return;
+      var root = document.getElementById("app");
+      if (!root) return;
+      var reason = event.reason && (event.reason.stack || event.reason.message) || String(event.reason || "Unknown promise rejection");
+      root.insertAdjacentHTML("beforeend", '<div style="position:fixed;inset:auto 16px 16px 16px;z-index:9999;background:#15171c;border:1px solid #a94d4d;color:#e7e2d7;padding:18px;border-radius:8px;font-family:system-ui,sans-serif"><strong style="color:#d56b6b">Application startup error</strong><pre style="white-space:pre-wrap;overflow:auto;margin:10px 0 0">'+String(reason).replace(/&/g,"&amp;").replace(/</g,"&lt;")+'</pre></div>');
+    });
+  </script>
+  <script src="js/map-player-controller.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/ui-refresh.js"></script>
+</body>
+</html>

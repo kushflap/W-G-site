@@ -1,0 +1,118 @@
+  }
+
+  function defName(g,id){return state.definitions[g].find(x=>x.id===id)?.name||'';}
+  function findName(id){for(const [k] of TYPES){const x=state.content[k].find(y=>y.id===id);if(x)return x.name;}return id;}
+
+  function renderMap(){
+    const s=$('#map-section');
+    if(!state.maps.length){
+      s.innerHTML=`<div class="section-header"><div><div class="eyebrow">Virtual Tabletop</div><h1>Maps</h1><p class="muted">Upload a PNG or JPG battle map, then use the tabletop tools to move tokens, draw, and hide or reveal areas.</p></div><div class="toolbar"><button class="button-primary" id="new-map">+ New Map</button><button id="token-library">Token Library</button></div></div><div class="card empty-state"><h2>No maps yet</h2><p>Upload your first map to begin.</p><button class="button-primary" id="empty-new-map">Upload Map</button></div>`;
+      $('#new-map').onclick=()=>createMap(); $('#empty-new-map').onclick=()=>createMap(); $('#token-library').onclick=tokenLibraryModal; return;
+    }
+    const map=state.maps.find(x=>x.id===state.activeMapId)||state.maps[0]; state.activeMapId=map.id; persist();
+    s.innerHTML=`<div class="section-header map-header"><div><div class="eyebrow">Virtual Tabletop</div><h1>${esc(map.name)}</h1><div class="combat-status"><span class="badge accent">Grid ${map.grid}px</span><span class="badge">Zoom ${Math.round((Number(map.zoom)||1)*100)}%</span><span class="badge">${map.tokens.length} Tokens</span><span class="badge">${map.fog.length} Fog strokes</span></div></div><div class="toolbar"><button id="open-combat-window">⚔ Combat Tracker</button><button id="open-player-map">▣ Player Map</button><button id="fullscreen-map">⛶ Fullscreen</button><select id="map-select">${state.maps.map(m=>`<option value="${m.id}" ${m.id===map.id?'selected':''}>${esc(m.name)}</option>`).join('')}</select><button id="rename-map">Rename</button><button class="button-primary" id="new-map">+ New Map</button><button id="token-library">Token Library</button><button class="button-danger" id="delete-map">Delete Map</button></div></div>
+      <div id="map-vtt" class="map-workspace"><aside class="map-side-rail map-left-rail"><button class="map-toolbar-toggle" id="map-toolbar-toggle" title="Show / hide toolbar">☰ Tools</button><aside class="map-toolbar"><div class="floating-panel-drag-handle" data-drag-handle="toolbar" title="Drag from here">⋮⋮ <span>Tools</span></div><div class="tool-group toolbar-settings"><div class="tool-title">Interface</div><button id="toolbar-hide">Hide Toolbar</button><label class="field"><span>Toolbar Opacity <strong id="toolbar-opacity-label">${Math.round((map.toolbarOpacity??0.94)*100)}%</strong></span><input id="toolbar-opacity" type="range" min="20" max="100" value="${Math.round((map.toolbarOpacity??0.94)*100)}"></label><label class="check-row"><input id="fog-toggle" type="checkbox" ${map.fogEnabled!==false?"checked":""}> Fog of War</label><label class="check-row"><input id="initiative-panel-toggle" type="checkbox" ${map.initiativePanelVisible!==false?"checked":""}> Initiative Panel</label></div><div class="tool-group"><div class="tool-title">Tools</div><button class="map-tool active" data-tool="none">✥ Select / Pan</button><button class="map-tool" data-tool="draw">✎ Draw</button><button class="map-tool" data-tool="hide">◼ Hide</button><button class="map-tool" data-tool="show">□ Show</button><button class="map-tool" data-tool="erase">⌫ Erase Drawing</button><div class="brush-controls"><label class="field"><span>Brush / Eraser Size <strong id="brush-size-label">${map.brushSize||20}px</strong></span><input id="brush-size" type="range" min="2" max="150" step="1" value="${map.brushSize||20}"></label></div></div><div class="tool-group"><div class="tool-title">Map</div><label class="field"><span>Grid Size</span><input id="grid-size" type="number" min="10" max="200" value="${map.grid}"></label><label class="check-row"><input id="grid-toggle" type="checkbox" ${map.gridVisible!==false?'checked':''}> Show Grid</label><label class="check-row"><input id="player-view" type="checkbox" ${map.playerView?'checked':''}> Player View</label><div class="zoom-controls"><button id="zoom-out">−</button><span id="zoom-label">${Math.round((Number(map.zoom)||1)*100)}%</span><button id="zoom-in">+</button><button id="zoom-reset">100%</button></div><p class="muted small">Hold Ctrl and use the mouse wheel over the map to zoom.</p><button id="fit-map">Fit Map</button></div><div class="tool-group"><div class="tool-title">Tokens</div><button class="button-primary" id="add-token">+ Add Token</button><p class="muted small">Click a token to select it. Drag with Move. Tokens can be linked to saved characters.</p></div><div class="tool-group"><div class="tool-title">GM Visibility</div><p class="muted small">Hide paints an opaque fog over the map. Show reveals it. Player View shows what players would currently see.</p><button id="hide-entire-map">Hide Entire Map</button><button id="show-entire-map">Show Entire Map</button><div class="panel-resize-handle" data-resize-handle="toolbar" title="Drag to resize"></div></aside></aside><div id="map-stage-wrap" class="map-stage-wrap"><div id="map-stage" class="map-stage ${map.gridVisible===false?'no-grid':''}" style="--grid:${map.grid}px;--zoom:${Number(map.zoom)||1}"><img id="map-image" class="map-image-layer" alt="" draggable="false"><canvas id="map-draw"></canvas><canvas id="map-fog"></canvas><div id="map-tokens"></div></div></div><aside class="map-side-rail map-right-rail"><aside id="initiative-panel" class="initiative-panel ${map.initiativePanelVisible===false?'is-collapsed':''}"><div class="floating-panel-drag-handle initiative-drag-handle" data-drag-handle="initiative" title="Drag from here">⋮⋮ <span>Combat Tracker</span></div><div class="initiative-panel-header"><div><div class="tool-title">Combat Tracker</div><strong>${esc(state.combat.name||'Current Encounter')}</strong></div><button id="initiative-panel-close" title="Collapse initiative panel">›</button></div><div class="initiative-panel-round">Round ${Number(state.combat.round||1)} · ${state.combat.active?'Active':'Not Started'}</div><div id="initiative-panel-list" class="initiative-panel-list"></div><div class="panel-resize-handle" data-resize-handle="initiative" title="Drag to resize"></div></aside><button id="initiative-panel-tab" class="initiative-panel-tab" title="Show combat tracker">‹ Combat</button></aside></div>`;
+    $('#fullscreen-map').onclick=()=>toggleMapFullscreen();
+    $('#open-combat-window').onclick=()=>openCombatWindow();
+    $('#open-player-map').onclick=()=>openPlayerMap(map);
+    const toolbar=$('.map-toolbar'), vtt=$('#map-vtt'), leftRail=$('.map-left-rail'), rightRail=$('.map-right-rail');
+    const setToolbarVisible=visible=>{map.toolbarVisible=visible;toolbar.classList.toggle('toolbar-hidden',!visible);leftRail.classList.toggle('is-collapsed',!visible);$('#map-toolbar-toggle').textContent=visible?'☰ Hide Tools':'☰ Show Tools';persist();};
+    $('#map-toolbar-toggle').onclick=()=>setToolbarVisible(!map.toolbarVisible);
+    $('#toolbar-hide').onclick=()=>setToolbarVisible(false);
+    $('#toolbar-opacity').oninput=e=>{const v=Math.max(.2,Math.min(1,Number(e.target.value)/100));map.toolbarOpacity=v;toolbar.style.setProperty('--toolbar-opacity',v);$('#toolbar-opacity-label').textContent=Math.round(v*100)+'%';};
+    $('#toolbar-opacity').onchange=()=>persist();
+    $('#fog-toggle').onchange=e=>{map.fogEnabled=e.target.checked;drawMapCanvases(map);persist();}; $('#initiative-panel-toggle').onchange=e=>{map.initiativePanelVisible=e.target.checked;renderInitiativePanel(map);persist();}; $('#initiative-panel-close').onclick=()=>{map.initiativePanelVisible=false;persist();renderInitiativePanel(map);}; $('#initiative-panel-tab').onclick=()=>{map.initiativePanelVisible=true;persist();renderInitiativePanel(map);};
+    toolbar.style.setProperty('--toolbar-opacity',Number(map.toolbarOpacity??.94));
+    applyFloatingPanelPosition(toolbar,map.toolbarPos||{x:12,y:12});
+    applyFloatingPanelPosition($('#initiative-panel'),map.initiativePanelPos||{x:8,y:12},false);
+    setupFloatingPanelDrag(toolbar,toolbar.querySelector('[data-drag-handle]'),map,'toolbarPos');
+    setupFloatingPanelDrag($('#initiative-panel'),$('#initiative-panel [data-drag-handle]'),map,'initiativePanelPos');
+    setupResizablePanel(toolbar,toolbar.querySelector('[data-resize-handle]'),map,'toolbarSize');
+    setupResizablePanel($('#initiative-panel'),$('#initiative-panel [data-resize-handle]'),map,'initiativePanelSize');
+    applyPanelSize(toolbar,map.toolbarSize||{width:240,height:null});
+    applyPanelSize($('#initiative-panel'),map.initiativePanelSize||{width:260,height:null});
+    setToolbarVisible(map.toolbarVisible!==false);
+    $('#map-select').onchange=e=>{state.activeMapId=e.target.value;persist();renderMap();}; $('#rename-map').onclick=()=>{const n=prompt('Map name:',map.name);if(n&&n.trim()){map.name=n.trim();persist();renderMap();}}; $('#new-map').onclick=()=>createMap(); $('#token-library').onclick=tokenLibraryModal; $('#delete-map').onclick=()=>{if(confirm('Delete this map and all of its tokens/fog?')){state.maps=state.maps.filter(x=>x.id!==map.id);state.activeMapId=state.maps[0]?.id||null;persist();renderMap();}};
+    $('#grid-size').onchange=e=>{map.grid=Math.max(8,Math.min(200,Number(e.target.value)||20));persist();renderMap();}; $('#grid-toggle').onchange=e=>{map.gridVisible=e.target.checked;persist();renderMap();}; $('#player-view').onchange=e=>{map.playerView=e.target.checked;persist();renderMap();}; $('#fit-map').onclick=()=>{$('#map-stage').scrollIntoView({behavior:'smooth',block:'center'});}; $('#hide-entire-map').onclick=()=>{map.fog=[];map.fogRects=[{x:0,y:0,w:$('#map-fog').width,h:$('#map-fog').height,show:false}];persist();drawMapCanvases(map);}; $('#show-entire-map').onclick=()=>{map.fog=[];map.fogRects=[];persist();drawMapCanvases(map);};
+    $$('.map-tool').forEach(b=>b.onclick=()=>{$$('.map-tool').forEach(x=>x.classList.remove('active'));b.classList.add('active');map.tool=b.dataset.tool;persist();});
+    $('#brush-size').oninput=e=>{map.brushSize=Math.max(2,Math.min(150,Number(e.target.value)||20));$('#brush-size-label').textContent=map.brushSize+'px';};
+    $('#brush-size').onchange=()=>persist();
+    $('#add-token').onclick=()=>addTokenPrompt(map);
+    setupMapCanvas(map);
+    renderMapTokens(map);
+    renderInitiativePanel(map);
+  }
+
+
+  function applyFloatingPanelPosition(el,pos,rightAnchored=false){
+    if(!el)return;
+    const host=el.parentElement;
+    const hostW=host?.clientWidth||window.innerWidth;
+    const hostH=host?.clientHeight||window.innerHeight;
+    const pw=el.offsetWidth||240, ph=el.offsetHeight||200;
+    let x=Number.isFinite(Number(pos?.x))?Number(pos.x):8;
+    let y=Math.max(8,Number(pos?.y)||12);
+    x=Math.max(8,Math.min(x,Math.max(8,hostW-pw-8)));
+    y=Math.max(8,Math.min(y,Math.max(8,hostH-ph-8)));
+    el.style.left=x+'px';
+    el.style.right='auto';
+    el.style.top=y+'px';
+    el.style.bottom='auto';
+  }
+
+  function applyPanelSize(panel,size){
+    if(!panel)return;
+    if(size?.width) panel.style.width=Math.round(size.width)+'px';
+    if(size?.height) panel.style.height=Math.round(size.height)+'px';
+    panel.style.maxWidth='calc(100% - 12px)';
+    panel.style.maxHeight='calc(100% - 16px)';
+  }
+  function setupResizablePanel(panel,handle,map,key){
+    if(!panel||!handle)return;
+    let resize=null;
+    handle.onpointerdown=e=>{
+      if(e.button!==0)return;
+      e.preventDefault();e.stopPropagation();
+      const rail=panel.parentElement;
+      const rect=panel.getBoundingClientRect();
+      resize={startX:e.clientX,startY:e.clientY,startW:rect.width,startH:rect.height};
+      handle.setPointerCapture?.(e.pointerId);
+      const move=ev=>{
+        if(!resize)return;
+        const railRect=rail.getBoundingClientRect();
+        const minW=160, maxW=Math.max(minW,rail.clientWidth-12);
+        const minH=120, maxH=Math.max(minH,rail.clientHeight-16);
+        const w=Math.max(minW,Math.min(maxW,resize.startW+(ev.clientX-resize.startX)));
+        const h=Math.max(minH,Math.min(maxH,resize.startH+(ev.clientY-resize.startY)));
+        panel.style.width=Math.round(w)+'px';
+        panel.style.height=Math.round(h)+'px';
+        map[key]={width:w,height:h};
+      };
+      const up=()=>{resize=null;document.removeEventListener('pointermove',move);document.removeEventListener('pointerup',up);persist();};
+      document.addEventListener('pointermove',move);document.addEventListener('pointerup',up,{once:true});
+    };
+  }
+
+  function setupFloatingPanelDrag(panel,handle,map,key){
+    if(!panel||!handle)return;
+    let drag=null;
+    handle.onpointerdown=e=>{
+      if(e.button!==0)return;
+      e.preventDefault();e.stopPropagation();
+      const rect=panel.getBoundingClientRect();
+      const parent=panel.offsetParent?.getBoundingClientRect?.()||{left:0,top:0};
+      drag={dx:e.clientX-rect.left,dy:e.clientY-rect.top,parentLeft:parent.left,parentTop:parent.top};
+      handle.setPointerCapture?.(e.pointerId);
+      handle.classList.add('dragging');
+      const move=ev=>{
+        if(!drag)return;
+        const host=panel.offsetParent||document.body;
+        const hw=host.clientWidth||window.innerWidth,hh=host.clientHeight||window.innerHeight;
+        const pw=panel.offsetWidth,ph=panel.offsetHeight;
+
+
+LATEST VTT BEHAVIOR NOTES
+==========================
+- Fog, Show, and Dark remain selected after each completed visibility rectangle. Select another tool to change modes.
+- Token under newly lifted fog begins appearing 1 second after the fog transition starts.
+- Player Map visibility changes publish immediately so stationary tokens reveal without requiring movement.

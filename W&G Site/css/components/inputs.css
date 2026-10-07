@@ -1,0 +1,31 @@
+input, select, textarea {
+  width: 100%;
+  background: #0e1013;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 9px 10px;
+  outline: none;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(185,154,96,.08);
+}
+
+textarea { resize: vertical; }
+
+label {
+  display: block;
+  color: var(--muted);
+  font-size: .78rem;
+  margin-bottom: 5px;
+}
+
+.field { margin-bottom: 13px; }
+
+.field-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}

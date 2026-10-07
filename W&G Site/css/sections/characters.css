@@ -1,0 +1,26 @@
+.character-list {
+  display: grid;
+  gap: 12px;
+}
+
+.character-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 15px;
+}
+
+.character-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.character-meta {
+  color: var(--muted);
+  font-size: .88rem;
+}
+
+.editor-section {
+  margin-bottom: 18px;
+}

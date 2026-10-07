@@ -1,0 +1,79 @@
+.combat-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.combat-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.combat-list {
+  display: grid;
+  gap: 12px;
+}
+
+.combatant-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px rgba(185,154,96,.18), var(--shadow);
+}
+
+.combatant-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.combatant-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.combatant-title h2 { margin: 0; }
+
+.combat-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.quick-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.quick-buttons button { padding: 6px; }
+
+.health-bar {
+  height: 5px;
+  background: #0b0c0f;
+  border-radius: 99px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.health-bar > div {
+  height: 100%;
+  background: var(--accent);
+  transition: width .15s ease;
+}
+
+.health-bar.shock > div { background: #768aa0; }
+
+.initiative {
+  max-width: 90px;
+}
+
+.combat-empty {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+}

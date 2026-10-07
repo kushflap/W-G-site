@@ -1,0 +1,2478 @@
+.map-workspace{display:grid;grid-template-columns:220px minmax(0,1fr);gap:14px;min-height:calc(100vh - 170px)}
+.map-toolbar{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:12px;align-self:start;position:sticky;top:12px;z-index:10}
+.tool-group{padding-bottom:14px;margin-bottom:14px;border-bottom:1px solid var(--border)}.tool-group:last-child{border-bottom:0;margin-bottom:0}.tool-title{font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:700;margin-bottom:8px}
+.map-tool{width:100%;text-align:left;margin-bottom:6px}.map-tool.active{outline:1px solid var(--accent);background:var(--panel-3)}
+.map-stage-wrap{overflow:auto;background:#08090b;border:1px solid var(--border);border-radius:var(--radius);padding:20px;min-height:650px}.map-stage{position:relative;display:block;overflow:hidden;background:#111;box-shadow:0 12px 45px rgba(0,0,0,.45);background-image:linear-gradient(rgba(255,255,255,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.09) 1px,transparent 1px);background-size:var(--grid) var(--grid)}.map-image-layer{position:absolute;left:0;top:0;display:block;max-width:none;width:100%;height:100%;object-fit:fill;user-select:none;pointer-events:none}.map-stage:has(.map-image-layer){background-image:linear-gradient(rgba(255,255,255,.09) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.09) 1px,transparent 1px)}
+.map-stage-wrap .map-stage{background-color:#101114}.map-stage[style*="--grid"]{background-size:var(--grid) var(--grid)}
+#map-fog,#map-draw{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}.map-token{position:absolute;z-index:5;border-radius:50%;border:2px solid rgba(235,210,145,.95);background:#20242a;display:grid;place-items:center;overflow:hidden;cursor:grab;box-shadow:0 3px 10px rgba(0,0,0,.6);touch-action:none}.map-token:active{cursor:grabbing}.map-token img{width:100%;height:100%;object-fit:cover}.map-token span{font-weight:800;color:#eee;font-size:1.1em}.modal-wide{width:min(900px,calc(100vw - 30px))}.token-library-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.token-lib-card{border:1px solid var(--border);background:var(--panel-2);border-radius:var(--radius);padding:10px;display:grid;gap:6px}.token-preview{height:110px;border-radius:8px;background:#0c0d10;display:grid;place-items:center;overflow:hidden}.token-preview img{max-width:100%;max-height:100%;object-fit:contain}.map-header{align-items:flex-start}
+@media(max-width:850px){.map-workspace{grid-template-columns:1fr}.map-toolbar{position:static;display:flex;flex-wrap:wrap;gap:8px}.tool-group{border:0;margin:0;padding:0}.tool-group .tool-title,.tool-group .muted{display:none}.map-toolbar .tool-group:nth-child(1){display:flex;flex-wrap:wrap}.map-tool{width:auto;margin:0}.map-stage-wrap{min-height:500px;padding:8px}}
+
+.map-stage.no-grid{background-image:none}
+
+.zoom-controls{display:flex;align-items:center;gap:6px;margin:8px 0}.zoom-controls button{min-width:38px}.zoom-controls span{min-width:52px;text-align:center;font-weight:700}.map-image-error{background:#160f12!important}.map-image-error::after{content:"Map image could not be displayed";position:absolute;inset:0;display:grid;place-items:center;color:#ddd;background:rgba(0,0,0,.7);font-weight:700;pointer-events:none}
+
+/* Full-screen VTT workspace */
+#map-section:fullscreen{background:#0b0d10;padding:0;width:100vw;height:100vh;overflow:hidden}
+#map-section:fullscreen .section-header{display:none}
+.map-fullscreen{position:fixed!important;inset:0;display:block!important;min-height:100vh!important;width:100vw}
+.map-fullscreen .map-stage-wrap{position:fixed;inset:0;border:0;border-radius:0;padding:0;background:#090b0d;min-height:100vh;overflow:auto}
+.map-fullscreen .map-toolbar{position:fixed;left:16px;top:16px;width:190px;z-index:50;box-shadow:0 12px 35px rgba(0,0,0,.65);backdrop-filter:blur(8px);background:rgba(18,20,24,.94)}
+.map-fullscreen .map-stage{box-shadow:none}
+.map-fullscreen .map-stage-wrap{cursor:grab}.map-fullscreen .map-stage-wrap:active{cursor:grabbing}
+.map-stage{background-color:#1b1d20}
+.map-image-layer{filter:brightness(1.08) contrast(1.02);}
+.map-stage-wrap{position:relative}
+@media(max-width:850px){.map-fullscreen .map-toolbar{left:8px;top:8px;width:min(220px,calc(100vw - 16px));}.map-fullscreen .map-stage-wrap{padding-top:0}}
+
+/* Improved token picker and neutral tool state */
+.token-picker-controls{display:grid;grid-template-columns:minmax(180px,1fr) 160px auto;gap:8px;margin-bottom:14px}
+.token-picker-grid{max-height:65vh;overflow:auto;padding:2px}
+.token-picker-card{appearance:none;border:1px solid var(--border);background:var(--panel-2);color:inherit;border-radius:var(--radius);padding:12px;display:grid;gap:6px;text-align:left;cursor:pointer;transition:transform .12s ease,border-color .12s ease,background .12s ease}
+.token-picker-card:hover{transform:translateY(-2px);border-color:var(--accent);background:var(--panel-3)}
+.token-picker-icon{height:130px;border-radius:10px;background:#090a0c;display:grid;place-items:center;overflow:hidden;border:1px solid var(--border)}
+.token-picker-icon img{width:100%;height:100%;object-fit:contain}.token-picker-icon span{font-size:3rem;font-weight:800;color:#eee}
+.brush-controls{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.brush-controls input[type=range]{width:100%;padding:0}
+.brush-controls strong{float:right;color:var(--text)}
+.map-tool.active[data-tool="none"]{border-color:var(--accent);background:var(--panel-3)}
+@media(max-width:700px){.token-picker-controls{grid-template-columns:1fr}.token-picker-grid{max-height:60vh}}
+
+/* Centered VTT stage and responsive floating interface */
+.map-stage-wrap{
+  background:#000!important;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:auto;
+  min-width:0;
+  min-height:650px;
+}
+.map-stage-wrap .map-stage{flex:0 0 auto;background-color:#000;}
+.map-toolbar{opacity:var(--toolbar-opacity,.94);transition:opacity .18s ease,transform .2s ease,visibility .2s ease;max-height:calc(100vh - 32px);overflow:auto;}
+.map-toolbar-toggle{position:fixed;left:16px;top:16px;z-index:60;display:none;box-shadow:0 8px 25px rgba(0,0,0,.6);}
+.map-workspace.toolbar-hidden .map-toolbar{display:none!important;}
+.map-workspace.toolbar-hidden .map-toolbar-toggle{display:block!important;}
+.map-workspace:not(.toolbar-hidden) .map-toolbar-toggle{display:block;}
+.map-fullscreen .map-toolbar{width:min(260px,28vw);max-height:calc(100vh - 32px);}
+.map-fullscreen .map-toolbar-toggle{left:16px;top:16px;}
+.map-fullscreen .map-stage-wrap{display:flex;align-items:center;justify-content:center;background:#000!important;padding:0;overflow:auto;}
+.map-fullscreen .map-stage{margin:auto;}
+.map-fullscreen.toolbar-hidden .map-stage-wrap{padding:0;}
+@media(max-width:1100px){.map-fullscreen .map-toolbar{width:min(230px,32vw);font-size:.92rem}.map-fullscreen .map-toolbar button{padding:8px 9px}.map-fullscreen .tool-group{padding-bottom:10px;margin-bottom:10px}}
+@media(max-width:700px){.map-toolbar-toggle{left:8px;top:8px}.map-fullscreen .map-toolbar{left:8px;top:8px;width:min(240px,calc(100vw - 16px));max-height:calc(100vh - 16px)}.map-stage-wrap{min-height:500px}.map-toolbar{max-height:calc(100vh - 16px)}}
+
+/* Dedicated projector/player map window */
+body.wg-player-window{margin:0;background:#000;overflow:hidden;color:#fff}
+#player-map-window{position:fixed;inset:0;background:#000;overflow:hidden}
+.player-map-stage-wrap{position:absolute;inset:0;background:#000;overflow:auto;display:flex;align-items:center;justify-content:center;padding:0}
+.player-map-stage{position:relative;margin:auto;flex:0 0 auto;display:block;background:#000;box-shadow:0 0 0 1px #111}
+.player-map-image{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block;user-select:none;pointer-events:none;filter:brightness(1.06) contrast(1.01)}
+#player-map-fog,#player-map-draw{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.player-map-token{position:absolute;z-index:5;border-radius:50%;overflow:hidden;border:2px solid rgba(235,210,145,.95);background:#20242a;display:grid;place-items:center;box-shadow:0 3px 10px rgba(0,0,0,.7)}
+.player-map-token img{width:100%;height:100%;object-fit:cover}.player-map-token span{font-weight:800;color:#eee;font-size:1.1em}
+.player-map-label{position:fixed;right:12px;bottom:12px;padding:7px 10px;border-radius:7px;background:rgba(0,0,0,.55);color:#bbb;font:600 12px system-ui,sans-serif;pointer-events:none}
+body.wg-combat-window{margin:0}body.wg-combat-window #main-navigation{display:none}body.wg-combat-window #main-content{padding:18px;max-width:none}
+
+/* Pan freely across both axes. The stage is centered when possible, but remains scrollable horizontally and vertically. */
+.map-stage-wrap{display:block!important;overflow:auto!important}
+.map-stage-wrap .map-stage{margin-left:auto;margin-right:auto}
+.map-fullscreen .map-stage-wrap{display:block!important;overflow:auto!important}
+.map-fullscreen .map-stage{margin-left:auto;margin-right:auto}
+
+/* Right-side initiative extension */
+.initiative-panel{position:absolute;right:14px;top:14px;width:min(260px,24vw);max-height:calc(100% - 28px);overflow:auto;z-index:40;background:rgba(13,15,19,.94);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 12px 35px rgba(0,0,0,.65);backdrop-filter:blur(8px);transition:transform .2s ease,opacity .2s ease,width .2s ease}
+.initiative-panel.is-collapsed{transform:translateX(calc(100% + 20px));opacity:0;pointer-events:none}
+.initiative-panel-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 2px 8px;border-bottom:1px solid var(--border)}
+.initiative-panel-header button{min-width:32px;padding:5px 8px;font-size:1.1rem}
+.initiative-panel-round{font-size:.72rem;color:var(--muted);padding:8px 2px;text-transform:uppercase;letter-spacing:.08em}
+.initiative-panel-list{display:grid;gap:6px}
+.initiative-panel-item{display:grid;grid-template-columns:25px 1fr;gap:8px;align-items:center;padding:8px;border:1px solid rgba(255,255,255,.07);border-radius:8px;background:rgba(255,255,255,.025)}
+.initiative-panel-item.current{border-color:var(--accent);background:rgba(235,210,145,.09);box-shadow:inset 3px 0 0 var(--accent)}
+.initiative-panel-index{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#20242a;font-size:.72rem;font-weight:800}
+.initiative-panel-main{min-width:0;display:grid;gap:2px}.initiative-panel-main strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.initiative-value,.wound-value{font-size:.7rem;color:var(--muted)}.wound-value b{color:var(--text)}
+.initiative-panel-tab{position:absolute;right:14px;top:14px;z-index:41;padding:9px 11px;border:1px solid var(--border);border-radius:10px;background:rgba(13,15,19,.94);color:var(--text);box-shadow:0 10px 28px rgba(0,0,0,.6);backdrop-filter:blur(8px);cursor:pointer}
+.initiative-panel-tab.is-hidden{display:none}
+.map-fullscreen .initiative-panel{right:16px;top:16px;width:min(270px,26vw);max-height:calc(100vh - 32px)}
+.map-fullscreen .initiative-panel-tab{right:16px;top:16px}
+@media(max-width:1050px){.initiative-panel{width:215px}.map-fullscreen .initiative-panel{width:220px}.map-fullscreen .map-toolbar{width:min(220px,30vw)}}
+@media(max-width:750px){.initiative-panel{right:8px;top:8px;width:190px;max-height:55%}.initiative-panel-tab{right:8px;top:8px}.map-fullscreen .initiative-panel{right:8px;top:8px;width:min(190px,46vw);max-height:55%}.map-fullscreen .initiative-panel-tab{right:8px;top:8px}}
+
+/* Dedicated projector/player map window */
+body.wg-player-window{margin:0;background:#000;overflow:hidden;color:#fff}
+#player-map-window{position:fixed;inset:0;background:#000;overflow:hidden}
+.player-map-stage-wrap{position:absolute;inset:0;background:#000;overflow:auto;display:flex;align-items:center;justify-content:center;padding:0}
+.player-map-stage{position:relative;margin:auto;flex:0 0 auto;display:block;background:#000;box-shadow:0 0 0 1px #111}
+.player-map-image{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block;user-select:none;pointer-events:none;filter:brightness(1.06) contrast(1.01)}
+#player-map-fog,#player-map-draw{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.player-map-token{position:absolute;z-index:5;border-radius:50%;overflow:hidden;border:2px solid rgba(235,210,145,.95);background:#20242a;display:grid;place-items:center;box-shadow:0 3px 10px rgba(0,0,0,.7)}
+.player-map-token img{width:100%;height:100%;object-fit:cover}.player-map-token span{font-weight:800;color:#eee;font-size:1.1em}
+.player-map-label{position:fixed;right:12px;bottom:12px;padding:7px 10px;border-radius:7px;background:rgba(0,0,0,.55);color:#bbb;font:600 12px system-ui,sans-serif;pointer-events:none}
+body.wg-combat-window{margin:0}body.wg-combat-window #main-navigation{display:none}body.wg-combat-window #main-content{padding:18px;max-width:none}
+
+/* Pan freely across both axes. The stage is centered when possible, but remains scrollable horizontally and vertically. */
+.map-stage-wrap{display:block!important;overflow:auto!important}
+.map-stage-wrap .map-stage{margin-left:auto;margin-right:auto}
+.map-fullscreen .map-stage-wrap{display:block!important;overflow:auto!important}
+.map-fullscreen .map-stage{margin-left:auto;margin-right:auto}
+
+/* Right-side initiative extension */
+.initiative-panel{position:absolute;right:14px;top:14px;width:min(245px,24vw);max-height:calc(100% - 28px);overflow:auto;z-index:40;background:rgba(13,15,19,.94);border:1px solid var(--border);border-radius:12px;padding:10px;box-shadow:0 12px 35px rgba(0,0,0,.65);backdrop-filter:blur(8px)}
+.initiative-panel.is-hidden{display:none!important}
+.initiative-panel-header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 2px 8px;border-bottom:1px solid var(--border)}
+.initiative-panel-header button{min-width:32px;padding:5px 8px}
+.initiative-panel-round{font-size:.72rem;color:var(--muted);padding:8px 2px;text-transform:uppercase;letter-spacing:.08em}
+.initiative-panel-list{display:grid;gap:6px}
+.initiative-panel-item{display:grid;grid-template-columns:25px 1fr;gap:8px;align-items:center;padding:8px;border:1px solid rgba(255,255,255,.07);border-radius:8px;background:rgba(255,255,255,.025)}
+.initiative-panel-item.current{border-color:var(--accent);background:rgba(235,210,145,.09);box-shadow:inset 3px 0 0 var(--accent)}
+.initiative-panel-index{width:25px;height:25px;border-radius:50%;display:grid;place-items:center;background:#20242a;font-size:.72rem;font-weight:800}
+.initiative-panel-main{min-width:0;display:grid;gap:2px}.initiative-panel-main strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.initiative-value,.wound-value{font-size:.7rem;color:var(--muted)}.wound-value b{color:var(--text)}
+@media(max-width:1050px){.initiative-panel{width:205px}.map-fullscreen .initiative-panel{width:205px}.map-fullscreen .map-toolbar{width:min(220px,30vw)}}
+@media(max-width:750px){.initiative-panel{right:8px;top:8px;width:190px;max-height:45%;}.map-fullscreen .initiative-panel{right:8px;top:8px;width:min(190px,46vw);max-height:45%}}
+
+/* Projector/player controls: navigation only */
+.player-map-toolbar{position:fixed;left:12px;top:12px;z-index:30;display:flex;align-items:center;gap:5px;padding:7px;border:1px solid rgba(255,255,255,.14);border-radius:10px;background:rgba(12,13,16,.84);box-shadow:0 10px 30px rgba(0,0,0,.55);backdrop-filter:blur(8px);font:600 13px system-ui,sans-serif}
+.player-map-toolbar button{border:1px solid rgba(255,255,255,.12);background:#191c21;color:#eee;border-radius:7px;padding:7px 9px;cursor:pointer}.player-map-toolbar button:hover{border-color:rgba(235,210,145,.7)}.player-map-toolbar button.active{outline:1px solid rgba(235,210,145,.9)}.player-map-toolbar span{min-width:48px;text-align:center;color:#ddd}
+.player-map-stage-wrap{cursor:grab!important}.player-map-stage-wrap:active{cursor:grabbing!important}
+@media(max-width:600px){.player-map-toolbar{left:7px;top:7px;gap:3px;padding:5px}.player-map-toolbar button{padding:6px 7px}.player-map-toolbar span{min-width:42px}}
+
+.player-map-stage-wrap{scrollbar-gutter:stable both-edges;}
+@media(max-width:700px){.initiative-panel{font-size:.9rem}.initiative-panel-tab{padding:8px 9px}}
+
+/* Responsive floating VTT panels. Panels are draggable only from their top handle. */
+.map-workspace{position:relative;display:block!important;min-height:calc(100vh - 170px);overflow:hidden;background:#000;border:1px solid var(--border);border-radius:12px}
+.map-toolbar{position:absolute!important;left:12px;right:auto;top:12px;width:clamp(190px,22vw,280px);max-width:calc(100% - 24px);max-height:calc(100% - 24px);z-index:50;overflow:auto;align-self:auto}
+.map-stage-wrap{position:absolute!important;inset:0;min-height:0!important;width:100%;height:100%;padding:0!important;background:#000!important}
+.map-stage-wrap .map-stage{margin-left:auto;margin-right:auto}
+.map-toolbar .floating-panel-drag-handle,.initiative-panel .floating-panel-drag-handle{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:center;gap:7px;height:30px;margin:-4px -4px 9px;padding:4px 8px;border-bottom:1px solid var(--border);color:var(--muted);font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;background:rgba(18,20,24,.96);cursor:grab;user-select:none;touch-action:none}
+.floating-panel-drag-handle:active,.floating-panel-drag-handle.dragging{cursor:grabbing;color:var(--accent)}
+.map-toolbar .floating-panel-drag-handle span,.initiative-panel .floating-panel-drag-handle span{pointer-events:none}
+.initiative-panel{position:absolute!important;left:auto;right:12px;top:12px;width:clamp(200px,22vw,280px);max-width:calc(100% - 24px);max-height:calc(100% - 24px);z-index:51;overflow:auto}
+.initiative-panel .floating-panel-drag-handle{margin:-4px -4px 8px}
+.initiative-panel-header{position:relative}
+.initiative-panel-tab{z-index:52}
+.map-fullscreen .map-workspace{position:fixed;inset:0;min-height:100vh;border:0;border-radius:0}
+.map-fullscreen .map-toolbar{width:clamp(190px,20vw,290px);max-height:calc(100vh - 24px)}
+.map-fullscreen .initiative-panel{width:clamp(200px,20vw,290px);max-height:calc(100vh - 24px)}
+.map-fullscreen .map-stage-wrap{position:absolute!important;inset:0}
+@media(max-width:900px){
+  .map-toolbar,.initiative-panel{width:min(300px,calc(100% - 24px));font-size:.92rem}
+  .map-toolbar .tool-group{padding-bottom:10px;margin-bottom:10px}
+}
+@media(max-width:600px){
+  .map-workspace{min-height:calc(100vh - 130px)}
+  .map-toolbar,.initiative-panel{width:min(280px,calc(100% - 16px));max-height:calc(100% - 16px)}
+  .map-toolbar{left:8px;top:8px}
+  .initiative-panel{right:8px;top:8px}
+  .map-toolbar .floating-panel-drag-handle,.initiative-panel .floating-panel-drag-handle{height:34px}
+}
+
+/* Side-gutter panel layout: panels live outside the map surface. */
+.map-workspace{display:grid;grid-template-columns:minmax(170px,220px) minmax(0,1fr) minmax(210px,280px);gap:14px;min-height:calc(100vh - 170px);align-items:stretch;position:relative;background:#08090b}
+.map-workspace .map-toolbar{grid-column:1;grid-row:1;position:relative;left:auto;right:auto;top:auto;bottom:auto;width:auto;max-height:calc(100vh - 190px);align-self:start;overflow:auto}
+.map-workspace .map-stage-wrap{grid-column:2;grid-row:1;min-width:0;min-height:650px;position:relative;display:flex!important;align-items:center;justify-content:center;overflow:auto;background:#000;border:1px solid var(--border);border-radius:var(--radius);padding:20px}
+.map-workspace .map-stage{margin:auto;flex:0 0 auto}
+.map-workspace .initiative-panel{grid-column:3;grid-row:1;position:relative;right:auto;top:auto;left:auto;bottom:auto;width:auto;max-height:calc(100vh - 190px);align-self:start;overflow:auto;transform:none}
+.map-workspace .initiative-panel.is-collapsed{display:none}
+.map-workspace .initiative-panel-tab{position:absolute;right:calc(min(210px, 20vw) * -1);top:14px;z-index:45}
+.map-workspace .map-toolbar-toggle{position:absolute;left:8px;top:8px;z-index:60}
+.map-workspace.toolbar-hidden .map-toolbar{display:none!important}
+.map-workspace.toolbar-hidden .map-stage-wrap{grid-column:1 / span 2}
+.map-workspace.toolbar-hidden .map-toolbar-toggle{display:block!important}
+.map-workspace:not(.toolbar-hidden) .map-toolbar-toggle{display:none}
+.map-workspace.initiative-hidden .initiative-panel{display:none}
+.map-workspace.initiative-hidden .map-stage-wrap{grid-column:2 / span 2}
+
+/* Drag handles are the only draggable portion of either panel. */
+.floating-panel-drag-handle{cursor:grab;user-select:none;touch-action:none;position:sticky;top:0;z-index:5;background:inherit;padding:5px 4px 9px;font-weight:800;border-bottom:1px solid var(--border);margin-bottom:8px}
+.floating-panel-drag-handle:active{cursor:grabbing}
+
+/* Fullscreen keeps the same three-column page layout. */
+.map-fullscreen{position:fixed!important;inset:0!important;display:grid!important;grid-template-columns:minmax(170px,220px) minmax(0,1fr) minmax(210px,280px)!important;gap:14px!important;padding:14px!important;background:#050607!important;min-height:100vh!important;width:100vw!important;overflow:hidden!important}
+.map-fullscreen .section-header{display:none!important}
+.map-fullscreen .map-toolbar{grid-column:1;grid-row:1;position:relative!important;left:auto!important;top:auto!important;width:auto!important;max-height:calc(100vh - 28px)!important}
+.map-fullscreen .map-stage-wrap{grid-column:2;grid-row:1;position:relative!important;inset:auto!important;min-height:0!important;height:calc(100vh - 28px)!important;padding:12px!important;display:flex!important;align-items:center;justify-content:center;overflow:auto!important;background:#000!important;border:1px solid #1e2228;border-radius:12px}
+.map-fullscreen .map-stage{margin:auto!important}
+.map-fullscreen .initiative-panel{grid-column:3;grid-row:1;position:relative!important;right:auto!important;top:auto!important;width:auto!important;max-height:calc(100vh - 28px)!important;align-self:start}
+.map-fullscreen .initiative-panel-tab{right:14px;top:14px}
+
+@media(max-width:1050px){
+  .map-workspace{grid-template-columns:minmax(150px,190px) minmax(0,1fr) minmax(180px,220px)}
+  .map-fullscreen{grid-template-columns:minmax(150px,190px) minmax(0,1fr) minmax(180px,220px)!important}
+}
+@media(max-width:780px){
+  .map-workspace{grid-template-columns:1fr;grid-template-rows:auto minmax(500px,1fr) auto}
+  .map-workspace .map-toolbar{grid-column:1;grid-row:1;max-height:34vh}
+  .map-workspace .map-stage-wrap{grid-column:1;grid-row:2;min-height:500px}
+  .map-workspace .initiative-panel{grid-column:1;grid-row:3;max-height:34vh}
+  .map-workspace .initiative-panel-tab{right:8px;top:auto;bottom:8px}
+  .map-fullscreen{grid-template-columns:1fr!important;grid-template-rows:auto minmax(0,1fr) auto!important;overflow:auto!important;padding:8px!important}
+  .map-fullscreen .map-toolbar{grid-column:1;grid-row:1;max-height:25vh!important}
+  .map-fullscreen .map-stage-wrap{grid-column:1;grid-row:2;height:auto!important;min-height:55vh!important}
+  .map-fullscreen .initiative-panel{grid-column:1;grid-row:3;max-height:25vh!important}
+}
+
+.map-workspace:has(.initiative-panel.is-collapsed){grid-template-columns:minmax(170px,220px) minmax(0,1fr);}
+.map-workspace:has(.initiative-panel.is-collapsed) .map-stage-wrap{grid-column:2;}
+@media(max-width:1050px){.map-workspace:has(.initiative-panel.is-collapsed){grid-template-columns:minmax(150px,190px) minmax(0,1fr);}}
+@media(max-width:780px){.map-workspace:has(.initiative-panel.is-collapsed){grid-template-columns:1fr;}}
+
+/* --- Side-gutter panel layout: panels are structurally outside the map --- */
+.map-workspace{
+  display:grid!important;
+  grid-template-columns:minmax(190px,280px) minmax(0,1fr) minmax(190px,280px)!important;
+  gap:16px!important;
+  min-height:calc(100vh - 170px);
+  align-items:stretch;
+  position:relative;
+  background:#000;
+}
+.map-side-rail{
+  position:relative;
+  min-width:0;
+  min-height:650px;
+  overflow:hidden;
+  background:#0b0c0f;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+}
+.map-left-rail{grid-column:1}
+.map-right-rail{grid-column:3}
+.map-side-rail.is-collapsed{
+  width:44px;
+  min-width:44px;
+  background:transparent;
+  border-color:transparent;
+  overflow:visible;
+}
+.map-toolbar{
+  position:absolute!important;
+  left:8px!important;
+  top:8px!important;
+  right:auto!important;
+  width:calc(100% - 16px)!important;
+  max-width:none!important;
+  max-height:calc(100% - 16px)!important;
+  height:auto;
+  box-sizing:border-box;
+  overflow:auto;
+  z-index:10;
+}
+.map-left-rail.is-collapsed .map-toolbar{display:none!important}
+.map-toolbar-toggle{
+  position:absolute!important;
+  left:8px!important;
+  top:8px!important;
+  z-index:20;
+  display:block!important;
+  width:calc(100% - 16px);
+  box-sizing:border-box;
+}
+.map-left-rail:not(.is-collapsed) .map-toolbar-toggle{
+  opacity:.45;
+  width:auto;
+  right:8px;
+  left:auto!important;
+  top:8px!important;
+  padding:4px 7px;
+}
+.map-stage-wrap{
+  grid-column:2;
+  grid-row:1;
+  min-width:0!important;
+  min-height:650px!important;
+  width:100%;
+  height:100%;
+  box-sizing:border-box;
+  border-radius:var(--radius);
+}
+.initiative-panel{
+  position:absolute!important;
+  left:8px!important;
+  right:auto!important;
+  top:8px!important;
+  width:calc(100% - 16px)!important;
+  max-width:none!important;
+  max-height:calc(100% - 16px)!important;
+  box-sizing:border-box;
+  overflow:auto;
+}
+.initiative-panel.is-collapsed{
+  transform:translateX(0)!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
+.initiative-panel-tab{
+  position:absolute!important;
+  left:8px!important;
+  right:auto!important;
+  top:8px!important;
+  z-index:20;
+  width:calc(100% - 16px);
+  box-sizing:border-box;
+}
+.panel-resize-handle{
+  position:absolute;
+  left:8px;
+  right:8px;
+  bottom:3px;
+  height:10px;
+  border-radius:6px;
+  cursor:ns-resize;
+  z-index:30;
+  background:linear-gradient(to bottom,transparent 35%,rgba(235,210,145,.45) 36%,rgba(235,210,145,.45) 64%,transparent 65%);
+  touch-action:none;
+}
+.panel-resize-handle:hover{background:linear-gradient(to bottom,transparent 30%,rgba(235,210,145,.85) 31%,rgba(235,210,145,.85) 69%,transparent 70%)}
+.floating-panel-drag-handle{
+  cursor:grab!important;
+  user-select:none;
+  touch-action:none;
+}
+.floating-panel-drag-handle.dragging{cursor:grabbing!important}
+.map-fullscreen{
+  position:fixed!important;
+  inset:0!important;
+  display:grid!important;
+  grid-template-columns:minmax(200px,280px) minmax(0,1fr) minmax(200px,280px)!important;
+  gap:16px!important;
+  width:100vw!important;
+  height:100vh!important;
+  min-height:100vh!important;
+  padding:12px!important;
+  box-sizing:border-box!important;
+  background:#000!important;
+}
+.map-fullscreen .map-side-rail{
+  min-height:0!important;
+  height:100%!important;
+}
+.map-fullscreen .map-stage-wrap{
+  min-height:0!important;
+  height:100%!important;
+  position:relative!important;
+  inset:auto!important;
+  padding:0!important;
+}
+.map-fullscreen .map-toolbar,
+.map-fullscreen .initiative-panel{
+  width:calc(100% - 16px)!important;
+  max-height:calc(100% - 16px)!important;
+}
+.map-fullscreen .map-toolbar-toggle,
+.map-fullscreen .initiative-panel-tab{
+  position:absolute!important;
+}
+.map-fullscreen .map-stage{
+  margin:auto!important;
+}
+@media(max-width:1000px){
+  .map-workspace{
+    grid-template-columns:minmax(170px,220px) minmax(0,1fr) minmax(170px,220px)!important;
+    gap:10px!important;
+  }
+  .map-fullscreen{
+    grid-template-columns:minmax(170px,220px) minmax(0,1fr) minmax(170px,220px)!important;
+    gap:10px!important;
+    padding:8px!important;
+  }
+}
+@media(max-width:760px){
+  .map-workspace{
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-template-rows:auto minmax(500px,1fr) auto!important;
+  }
+  .map-left-rail,.map-right-rail{
+    grid-column:1!important;
+    min-height:0!important;
+    height:auto!important;
+  }
+  .map-left-rail{grid-row:1;min-height:48px}
+  .map-stage-wrap{grid-column:1;grid-row:2;min-height:500px!important}
+  .map-right-rail{grid-row:3;min-height:48px}
+  .map-toolbar,.initiative-panel{
+    position:relative!important;
+    left:8px!important;top:8px!important;
+    width:calc(100% - 16px)!important;
+    max-height:55vh!important;
+  }
+  .map-side-rail.is-collapsed{width:auto;min-width:0;min-height:48px}
+  .map-fullscreen{
+    grid-template-columns:1fr!important;
+    grid-template-rows:auto minmax(0,1fr) auto!important;
+    gap:6px!important;
+    padding:6px!important;
+  }
+  .map-fullscreen .map-left-rail{grid-row:1}
+  .map-fullscreen .map-stage-wrap{grid-row:2}
+  .map-fullscreen .map-right-rail{grid-row:3}
+}
+
+
+/* FINAL VTT LAYOUT: side panels are page gutters; only the center is the map surface. */
+.map-workspace{
+  display:grid !important;
+  grid-template-columns:minmax(190px,280px) minmax(0,1fr) minmax(210px,300px) !important;
+  gap:16px !important;
+  min-height:calc(100vh - 170px) !important;
+  position:relative !important;
+  overflow:visible !important;
+  background:transparent !important;
+  border:0 !important;
+  border-radius:0 !important;
+}
+.map-workspace .map-left-rail{grid-column:1;grid-row:1;min-width:0;position:relative;overflow:visible;}
+.map-workspace .map-right-rail{grid-column:3;grid-row:1;min-width:0;position:relative;overflow:visible;}
+.map-workspace .map-stage-wrap{
+  grid-column:2 !important;grid-row:1 !important;min-width:0 !important;min-height:650px !important;
+  position:relative !important;inset:auto !important;width:auto !important;height:auto !important;
+  display:flex !important;align-items:center !important;justify-content:center !important;overflow:auto !important;
+  background:#000 !important;border:1px solid var(--border) !important;border-radius:12px !important;padding:20px !important;
+}
+.map-workspace .map-toolbar,
+.map-workspace .initiative-panel{
+  position:relative !important;left:auto !important;right:auto !important;top:auto !important;bottom:auto !important;
+  width:100% !important;max-width:none !important;max-height:calc(100vh - 190px) !important;
+  box-sizing:border-box !important;overflow:auto !important;transform:none !important;
+}
+.map-workspace .initiative-panel.is-collapsed{display:none !important;}
+.map-workspace .initiative-panel-tab{position:absolute !important;right:-8px !important;top:8px !important;transform:translateX(100%) !important;}
+.map-workspace .map-toolbar-toggle{position:absolute !important;left:-8px !important;top:8px !important;transform:translateX(-100%) !important;}
+.map-workspace.toolbar-hidden .map-toolbar{display:none !important;}
+.map-workspace.toolbar-hidden .map-stage-wrap{grid-column:1 / span 2 !important;}
+.map-workspace.toolbar-hidden .map-left-rail{width:0 !important;min-width:0 !important;}
+.map-workspace.initiative-hidden .initiative-panel{display:none !important;}
+.map-workspace.initiative-hidden .map-stage-wrap{grid-column:2 / span 2 !important;}
+.map-workspace.initiative-hidden .map-right-rail{width:0 !important;min-width:0 !important;}
+.map-fullscreen{
+  display:grid !important;grid-template-columns:minmax(190px,280px) minmax(0,1fr) minmax(210px,300px) !important;
+  gap:16px !important;padding:16px !important;background:#050607 !important;overflow:hidden !important;
+}
+.map-fullscreen .map-left-rail{grid-column:1;grid-row:1;}
+.map-fullscreen .map-stage-wrap{grid-column:2 !important;grid-row:1 !important;height:calc(100vh - 32px) !important;min-height:0 !important;}
+.map-fullscreen .map-right-rail{grid-column:3;grid-row:1;}
+.map-fullscreen .map-toolbar,.map-fullscreen .initiative-panel{max-height:calc(100vh - 32px) !important;}
+.map-fullscreen .initiative-panel-tab{right:-8px !important;top:8px !important;}
+.map-fullscreen .map-toolbar-toggle{left:-8px !important;top:8px !important;}
+@media(max-width:1050px){
+  .map-workspace,.map-fullscreen{grid-template-columns:minmax(165px,220px) minmax(0,1fr) minmax(180px,235px) !important;gap:10px !important;}
+}
+@media(max-width:780px){
+  .map-workspace{grid-template-columns:1fr !important;grid-template-rows:auto minmax(500px,1fr) auto !important;gap:10px !important;overflow:visible !important;}
+  .map-workspace .map-left-rail{grid-column:1;grid-row:1;}
+  .map-workspace .map-stage-wrap{grid-column:1 !important;grid-row:2 !important;min-height:500px !important;}
+  .map-workspace .map-right-rail{grid-column:1;grid-row:3;}
+  .map-workspace .map-toolbar,.map-workspace .initiative-panel{max-height:34vh !important;}
+  .map-workspace .map-toolbar-toggle,.map-workspace .initiative-panel-tab{position:static !important;transform:none !important;margin-top:6px;}
+  .map-fullscreen{grid-template-columns:1fr !important;grid-template-rows:auto minmax(0,1fr) auto !important;gap:8px !important;padding:8px !important;overflow:auto !important;}
+  .map-fullscreen .map-left-rail{grid-column:1;grid-row:1;}
+  .map-fullscreen .map-stage-wrap{grid-column:1 !important;grid-row:2 !important;height:auto !important;min-height:55vh !important;}
+  .map-fullscreen .map-right-rail{grid-column:1;grid-row:3;}
+}
+
+/* Final side-panel behavior: panels are contained by their page rails, never the map. */
+.map-workspace{grid-template-columns:minmax(180px,300px) minmax(0,1fr) minmax(180px,300px)!important;}
+.map-side-rail{position:relative!important;overflow:visible!important;background:transparent!important;border:0!important;border-radius:0!important;min-width:0!important;}
+.map-workspace .map-toolbar,.map-workspace .initiative-panel{position:absolute!important;max-width:none!important;max-height:calc(100% - 16px)!important;overflow:auto!important;box-sizing:border-box!important;z-index:50;}
+.map-workspace .map-toolbar.toolbar-hidden{display:none!important;}
+.map-workspace .initiative-panel.is-collapsed{display:none!important;}
+.map-workspace .map-toolbar-toggle{position:absolute!important;left:8px!important;top:8px!important;transform:none!important;z-index:60;}
+.map-workspace .initiative-panel-tab{position:absolute!important;right:8px!important;top:8px!important;transform:none!important;z-index:60;}
+.map-workspace .panel-resize-handle{position:sticky!important;bottom:0!important;height:12px!important;cursor:ns-resize!important;background:linear-gradient(to bottom,transparent 0%,rgba(255,255,255,.14) 45%,rgba(255,255,255,.28) 50%,rgba(255,255,255,.14) 55%,transparent 100%);z-index:80;touch-action:none;}
+.map-workspace .floating-panel-drag-handle{cursor:grab!important;touch-action:none!important;}
+.map-workspace .floating-panel-drag-handle.dragging{cursor:grabbing!important;}
+.map-fullscreen .map-side-rail{min-height:0!important;overflow:visible!important;}
+.map-fullscreen .map-toolbar,.map-fullscreen .initiative-panel{position:absolute!important;max-height:calc(100vh - 28px)!important;}
+@media(max-width:780px){
+  .map-workspace{grid-template-columns:1fr!important;grid-template-rows:auto minmax(500px,1fr) auto!important;}
+  .map-workspace .map-side-rail{min-height:auto!important;}
+  .map-workspace .map-toolbar,.map-workspace .initiative-panel{position:relative!important;left:auto!important;right:auto!important;top:auto!important;width:100%!important;max-height:34vh!important;margin:0!important;}
+  .map-workspace .map-toolbar-toggle,.map-workspace .initiative-panel-tab{position:relative!important;left:auto!important;right:auto!important;top:auto!important;margin:6px 0!important;}
+}
+
+
+/* Visibility tool patch: explicit Fog / Show / Dark states and responsive controls. */
+.visibility-tool-group .visibility-tool-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.visibility-tool-group .map-tool{width:100%;margin:0;min-width:0;white-space:normal;line-height:1.15;}
+.visibility-tool-group .map-tool.active{box-shadow:inset 0 0 0 1px var(--accent);}
+.visibility-tool-group .visibility-fog{border-color:rgba(170,170,170,.55);}
+.visibility-tool-group .visibility-show{border-color:rgba(235,210,145,.55);}
+.visibility-tool-group .visibility-dark{border-color:rgba(20,20,20,.9);}
+@media(max-width:1100px){.visibility-tool-group .visibility-tool-grid{grid-template-columns:1fr 1fr;}.map-toolbar{min-width:0;}.map-toolbar button{max-width:100%;}}
+@media(max-width:780px){.visibility-tool-group .visibility-tool-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.visibility-tool-group .map-tool{min-height:38px;padding:8px 6px;}.map-toolbar{min-width:0;width:100%;box-sizing:border-box;}.map-toolbar .tool-group{min-width:0;}.map-toolbar{overflow-x:hidden;overflow-y:auto;}}
+@media(max-width:420px){.visibility-tool-group .visibility-tool-grid{grid-template-columns:1fr 1fr;gap:5px;}.visibility-tool-group .map-tool{font-size:.82rem;padding:7px 5px;}}
+
+/* Combat tracker editing / manager */
+.initiative-panel-header{display:flex;align-items:center;gap:6px;}
+.initiative-panel-header>div{min-width:0;flex:1;}
+#manage-combat-panel{font-size:.7rem;padding:5px 7px;white-space:nowrap;}
+.tracker-wounds{display:flex;align-items:center;gap:5px;font-size:.7rem;color:var(--muted);margin-top:3px;}
+.tracker-wounds input{width:58px;min-width:0;padding:3px 5px;font-size:.75rem;}
+.combat-manager-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.combat-manager-list{display:flex;flex-direction:column;gap:7px;margin-top:8px;max-height:52vh;overflow:auto;}
+.combat-manager-list>input{margin-bottom:4px;}
+.combat-manager-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px;border:1px solid var(--border);border-radius:9px;background:rgba(255,255,255,.025);}
+.combat-manager-row>div{min-width:0;display:flex;flex-direction:column;gap:2px;}
+.combat-manager-row strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.combat-manager-row button{flex:0 0 auto;}
+@media(max-width:700px){.combat-manager-grid{grid-template-columns:1fr;}.combat-manager-list{max-height:30vh;}#manage-combat-panel{font-size:.65rem;padding:4px 5px;}}
+
+/* Responsive combat manager + compact tracker wound controls */
+.combat-manager-modal{width:min(900px,calc(100vw - 24px));max-height:min(82vh,760px);display:flex;flex-direction:column;overflow:hidden;box-sizing:border-box}
+.combat-manager-modal .modal-header{flex:0 0 auto}
+.combat-manager-modal .combat-manager-grid{min-height:0;overflow:hidden}
+.combat-manager-modal .combat-manager-grid>section{min-width:0;min-height:0;display:flex;flex-direction:column}
+.combat-manager-modal .combat-manager-list{min-height:0;max-height:none;flex:1 1 auto;overflow:auto}
+.combat-manager-row{min-width:0;flex-wrap:wrap}
+.combat-manager-add{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.combat-manager-add label{display:flex;align-items:center;gap:4px;font-size:.72rem;color:var(--muted)}
+.combat-manager-add input{width:58px;min-width:0;padding:5px 6px}
+.tracker-wounds{justify-content:flex-start}
+.tracker-wound-btn{width:25px;height:25px;padding:0!important;min-width:25px!important;display:grid;place-items:center;border:1px solid var(--border);border-radius:6px;background:rgba(255,255,255,.05);color:var(--text);font-weight:800;line-height:1}
+.tracker-wound-btn:hover{border-color:var(--accent)}
+@media(max-width:700px){
+ .combat-manager-modal{width:calc(100vw - 14px);max-height:88vh}
+ .combat-manager-grid{grid-template-columns:1fr!important;overflow:auto!important}
+ .combat-manager-grid>section{max-height:34vh}
+ .combat-manager-list{max-height:none!important}
+ .combat-manager-row{align-items:flex-start}
+ .combat-manager-add{width:100%;justify-content:flex-end}
+}
+@media(max-width:420px){
+ .combat-manager-modal .modal-header h2{font-size:1rem}
+ .combat-manager-add{justify-content:space-between}
+ .combat-manager-add input{width:52px}
+}
+
+/* Authoritative visibility states: each newer region replaces the state beneath it. */
+.initiative-panel-item.dead { border-color: rgba(220,55,55,.65); background: rgba(130,20,20,.12); }
+.initiative-panel-index.dead-icon { background:#a71919; color:#fff; box-shadow:0 0 0 2px rgba(255,80,80,.18); }
+.tracker-dead-btn { font-size:.68rem!important; padding:3px 6px!important; border:1px solid rgba(180,60,60,.55)!important; background:rgba(100,20,20,.12)!important; color:#f1b1b1!important; }
+.tracker-dead-btn.is-dead { background:#a71919!important; color:#fff!important; border-color:#e25b5b!important; }
+.player-map-stage { flex:0 0 auto; }
+.player-map-stage > .player-map-image,
+.player-map-stage > #player-map-fog,
+.player-map-stage > #player-map-draw,
+.player-map-stage > #player-map-tokens { transform-origin:0 0; }
+
+
+/* Live combatant death marker. These are separate layers so the red wash and
+   skull can animate independently and work on both GM and Player Map. */
+.map-token .token-dead-red,
+.player-map-token .token-dead-red{
+  position:absolute;
+  inset:0;
+  z-index:20;
+  border-radius:inherit;
+  background:rgba(190,20,20,.42);
+  pointer-events:none;
+  animation:token-death-red-pulse 1.8s ease-in-out infinite;
+}
+.map-token .token-dead-skull,
+.player-map-token .token-dead-skull{
+  position:absolute;
+  inset:0;
+  z-index:21;
+  display:grid;
+  place-items:center;
+  pointer-events:none;
+  color:rgba(255,235,235,.78);
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,.85));
+  animation:token-death-skull-pulse 1.8s ease-in-out infinite;
+}
+.map-token .token-dead-skull .dead-skull-icon,
+.player-map-token .token-dead-skull .dead-skull-icon{
+  width:75%;
+  height:75%;
+  max-width:75%;
+  max-height:75%;
+  display:block;
+  color:inherit;
+  fill:currentColor;
+  stroke:currentColor;
+}
+@keyframes token-death-red-pulse{
+  0%,100%{opacity:.72}
+  50%{opacity:.92}
+}
+@keyframes token-death-skull-pulse{
+  0%,100%{opacity:.66;transform:scale(.96)}
+  50%{opacity:.88;transform:scale(1)}
+}
+
+/* Combat-bound token death state */
+.map-token .token-dead-overlay,
+.player-map-token .token-dead-overlay{
+  position:absolute;
+  inset:0;
+  z-index:20;
+  display:grid;
+  place-items:center;
+  background:rgba(190,20,20,.48);
+  color:#fff;
+  font-size:clamp(18px,45%,42px);
+  font-weight:900;
+  text-shadow:0 1px 3px #000;
+  pointer-events:none;
+}
+
+/* Dedicated player black surround and centered map viewport */
+#player-map-window{background:#000!important;}
+.player-map-stage-wrap{
+  background:#000!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:auto!important;
+  width:100%!important;
+  height:100%!important;
+  padding:0!important;
+}
+.player-map-stage{
+  position:relative!important;
+  flex:0 0 auto!important;
+  margin:0 auto!important;
+  background:#000!important;
+}
+
+@media(max-width:700px){
+  .combat-manager-modal{width:calc(100vw - 12px)!important;max-width:none!important;max-height:90vh!important;}
+  .combat-manager-modal .combat-manager-grid{grid-template-columns:1fr!important;min-height:0!important;overflow:auto!important;}
+  .combat-manager-modal .combat-manager-grid>section{min-height:180px!important;max-height:36vh!important;}
+}
+
+/* VTT side-panel redesign: compact, quiet, separated, and resize-friendly. */
+.map-workspace{
+  grid-template-columns:minmax(205px,250px) minmax(0,1fr) minmax(235px,300px)!important;
+  gap:22px!important;
+  padding:14px!important;
+  background:radial-gradient(circle at center,#0d0f12 0%,#070809 72%)!important;
+  box-sizing:border-box;
+}
+.map-workspace .map-side-rail{
+  min-width:0;
+  position:relative;
+  padding:0;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  overflow:visible;
+}
+.map-workspace .map-toolbar,
+.map-workspace .initiative-panel{
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  max-height:calc(100vh - 210px)!important;
+  box-sizing:border-box!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  background:rgba(12,14,17,.72)!important;
+  backdrop-filter:blur(12px)!important;
+  box-shadow:0 10px 30px rgba(0,0,0,.34)!important;
+  opacity:.76;
+  transition:opacity .18s ease,box-shadow .18s ease,border-color .18s ease;
+}
+.map-workspace .map-toolbar:hover,
+.map-workspace .initiative-panel:hover,
+.map-workspace .map-toolbar:focus-within,
+.map-workspace .initiative-panel:focus-within{opacity:.96;box-shadow:0 14px 38px rgba(0,0,0,.52)!important;border-color:rgba(235,210,145,.22)!important}
+.map-workspace .map-toolbar .floating-panel-drag-handle,
+.map-workspace .initiative-panel .floating-panel-drag-handle{
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.015))!important;
+  border-bottom-color:rgba(255,255,255,.08)!important;
+  color:rgba(235,210,145,.72)!important;
+}
+.map-workspace .map-stage-wrap{
+  min-width:0!important;
+  border-color:rgba(255,255,255,.08)!important;
+  box-shadow:inset 0 0 70px rgba(0,0,0,.35),0 8px 30px rgba(0,0,0,.22);
+}
+.map-workspace .initiative-panel-header{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:7px!important;
+  align-items:start!important;
+}
+.map-workspace .initiative-panel-header>div{min-width:0!important}
+.map-workspace #manage-combat-panel,
+.map-workspace #reset-combat-panel,
+.map-workspace #initiative-panel-close{
+  min-width:0!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+  line-height:1.1!important;
+}
+.map-workspace #manage-combat-panel{grid-column:1;grid-row:2}
+.map-workspace #reset-combat-panel{grid-column:2;grid-row:2}
+.map-workspace #initiative-panel-close{position:absolute;right:0;top:0}
+.map-workspace .initiative-panel-header .tool-title{padding-right:22px}
+.map-workspace .panel-resize-handle{
+  position:absolute!important;
+  left:7px!important;
+  right:7px!important;
+  bottom:2px!important;
+  height:11px!important;
+  margin:0!important;
+  border-radius:5px;
+  background:linear-gradient(to bottom,transparent 0%,rgba(235,210,145,.12) 45%,rgba(235,210,145,.28) 50%,transparent 100%)!important;
+  cursor:ns-resize!important;
+  touch-action:none!important;
+}
+.map-workspace .map-toolbar,.map-workspace .initiative-panel{padding-bottom:16px!important}
+
+/* The dedicated pan tool uses pointer capture and may move freely in every direction. */
+.map-workspace .map-stage-wrap{touch-action:none!important;cursor:default}
+.map-workspace .map-stage-wrap:has(+ *){}
+.map-workspace .map-stage{will-change:transform}
+
+@media(max-width:1050px){
+  .map-workspace{grid-template-columns:minmax(190px,220px) minmax(0,1fr) minmax(215px,255px)!important;gap:16px!important;padding:10px!important}
+}
+@media(max-width:780px){
+  .map-workspace{grid-template-columns:1fr!important;grid-template-rows:auto minmax(500px,1fr) auto!important;gap:12px!important;padding:8px!important}
+  .map-workspace .map-side-rail{width:100%;}
+  .map-workspace .map-toolbar,.map-workspace .initiative-panel{width:100%!important;max-height:32vh!important}
+}
+
+/* Keep manager controls compact and prevent Reset/Manage text collisions. */
+.combat-manager-modal .modal-header{min-width:0;gap:12px;align-items:flex-start}
+.combat-manager-modal .modal-header>div{min-width:0;flex:1}
+.combat-manager-modal .modal-header h2,
+.combat-manager-modal .modal-header p{overflow-wrap:anywhere}
+.combat-manager-modal .modal-actions{flex-wrap:wrap}
+
+
+/* FINAL VTT PANEL / PAN LAYER: authoritative overrides for the current build */
+.map-workspace {
+  display:grid !important;
+  grid-template-columns:minmax(210px,280px) minmax(0,1fr) minmax(230px,300px) !important;
+  gap:24px !important;
+  padding:16px !important;
+  align-items:stretch !important;
+  overflow:hidden !important;
+  background:radial-gradient(circle at 50% 50%,#101216 0%,#060708 78%) !important;
+}
+.map-side-rail {
+  position:relative !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  height:100% !important;
+  overflow:visible !important;
+  background:transparent !important;
+  border:0 !important;
+  border-radius:0 !important;
+}
+.map-workspace .map-toolbar,
+.map-workspace .initiative-panel {
+  position:absolute !important;
+  box-sizing:border-box !important;
+  left:8px !important;
+  right:auto !important;
+  top:8px !important;
+  width:calc(100% - 16px) !important;
+  max-width:none !important;
+  max-height:calc(100% - 16px) !important;
+  height:auto;
+  overflow:auto !important;
+  margin:0 !important;
+  align-self:auto !important;
+  background:rgba(9,11,14,.58) !important;
+  border:1px solid rgba(235,210,145,.10) !important;
+  box-shadow:0 12px 34px rgba(0,0,0,.32) !important;
+  backdrop-filter:blur(10px) !important;
+  opacity:.58 !important;
+  transition:opacity .18s ease, border-color .18s ease, box-shadow .18s ease !important;
+  z-index:20 !important;
+}
+.map-workspace .initiative-panel { z-index:21 !important; }
+.map-workspace .map-toolbar:hover,
+.map-workspace .map-toolbar:focus-within,
+.map-workspace .initiative-panel:hover,
+.map-workspace .initiative-panel:focus-within,
+.map-workspace .map-toolbar.is-dragging,
+.map-workspace .initiative-panel.is-dragging {
+  opacity:.96 !important;
+  border-color:rgba(235,210,145,.28) !important;
+  box-shadow:0 18px 46px rgba(0,0,0,.52) !important;
+}
+.map-workspace .floating-panel-drag-handle {
+  cursor:grab !important;
+  user-select:none !important;
+  touch-action:none !important;
+  position:sticky !important;
+  top:0 !important;
+  z-index:30 !important;
+  height:30px !important;
+  margin:-4px -4px 9px !important;
+  padding:4px 8px !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  color:rgba(235,210,145,.70) !important;
+  background:rgba(10,12,15,.88) !important;
+  border-bottom:1px solid rgba(235,210,145,.10) !important;
+}
+.map-workspace .floating-panel-drag-handle:hover { cursor:grab !important; color:rgba(235,210,145,.95) !important; }
+.map-workspace .floating-panel-drag-handle.dragging,
+.map-workspace .floating-panel-drag-handle:active { cursor:grabbing !important; }
+.map-workspace .map-stage-wrap {
+  grid-column:2 !important;
+  grid-row:1 !important;
+  min-width:0 !important;
+  min-height:0 !important;
+  width:100% !important;
+  height:100% !important;
+  padding:0 !important;
+  overflow:hidden !important;
+  display:flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  position:relative !important;
+  background:#000 !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+  border-radius:12px !important;
+  touch-action:none !important;
+}
+.map-workspace .map-stage { flex:0 0 auto !important; margin:0 !important; will-change:transform; }
+.map-workspace .map-stage-wrap.pan-tool-active { cursor:grab !important; }
+.map-workspace .map-stage-wrap.pan-tool-active.is-panning { cursor:grabbing !important; }
+.map-workspace .map-stage-wrap.pan-tool-active .map-image-layer,
+.map-workspace .map-stage-wrap.pan-tool-active #map-draw,
+.map-workspace .map-stage-wrap.pan-tool-active #map-fog { cursor:grab !important; }
+
+/* Eight real resize zones. */
+.map-workspace .map-toolbar .panel-resize-handle,
+.map-workspace .initiative-panel .panel-resize-handle {
+  position:absolute !important;
+  display:block !important;
+  z-index:40 !important;
+  margin:0 !important;
+  padding:0 !important;
+  background:transparent !important;
+  border:0 !important;
+  opacity:0 !important;
+  touch-action:none !important;
+}
+.map-workspace .map-toolbar:hover .panel-resize-handle,
+.map-workspace .map-toolbar:focus-within .panel-resize-handle,
+.map-workspace .initiative-panel:hover .panel-resize-handle,
+.map-workspace .initiative-panel:focus-within .panel-resize-handle { opacity:1 !important; }
+.map-workspace .panel-resize-handle.edge-left,
+.map-workspace .panel-resize-handle.edge-right { top:10px !important; bottom:10px !important; width:9px !important; }
+.map-workspace .panel-resize-handle.edge-left { left:-4px !important; cursor:ew-resize !important; }
+.map-workspace .panel-resize-handle.edge-right { right:-4px !important; cursor:ew-resize !important; }
+.map-workspace .panel-resize-handle.edge-top,
+.map-workspace .panel-resize-handle.edge-bottom { left:10px !important; right:10px !important; height:9px !important; }
+.map-workspace .panel-resize-handle.edge-top { top:-4px !important; cursor:ns-resize !important; }
+.map-workspace .panel-resize-handle.edge-bottom { bottom:-4px !important; cursor:ns-resize !important; }
+.map-workspace .panel-resize-handle.corner-nw,
+.map-workspace .panel-resize-handle.corner-ne,
+.map-workspace .panel-resize-handle.corner-sw,
+.map-workspace .panel-resize-handle.corner-se { width:13px !important; height:13px !important; }
+.map-workspace .panel-resize-handle.corner-nw { left:-5px !important; top:-5px !important; cursor:nwse-resize !important; }
+.map-workspace .panel-resize-handle.corner-ne { right:-5px !important; top:-5px !important; cursor:nesw-resize !important; }
+.map-workspace .panel-resize-handle.corner-sw { left:-5px !important; bottom:-5px !important; cursor:nesw-resize !important; }
+.map-workspace .panel-resize-handle.corner-se { right:-5px !important; bottom:-5px !important; cursor:nwse-resize !important; }
+
+.map-workspace .initiative-panel-header {
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) auto auto auto !important;
+  gap:6px !important;
+  align-items:start !important;
+}
+.map-workspace .initiative-panel-header > div { min-width:0 !important; }
+.map-workspace .initiative-panel-header strong { display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.map-workspace #manage-combat-panel,
+.map-workspace #reset-combat-panel,
+.map-workspace #initiative-panel-close {
+  min-width:0 !important;
+  max-width:100% !important;
+  white-space:normal !important;
+  overflow-wrap:anywhere !important;
+  line-height:1.05 !important;
+}
+.map-workspace #initiative-panel-close { padding:4px 7px !important; }
+.map-workspace .initiative-panel-list { min-width:0 !important; overflow:auto !important; }
+.map-workspace .tracker-wounds { flex-wrap:wrap !important; }
+
+.map-workspace .map-toolbar > .tool-group,
+.map-workspace .initiative-panel > * { min-width:0 !important; }
+.map-workspace .map-toolbar button { max-width:100%; white-space:normal; overflow-wrap:anywhere; }
+.map-workspace .map-toolbar .visibility-tool-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+
+.map-workspace.toolbar-hidden .map-left-rail { display:none !important; }
+.map-workspace.toolbar-hidden { grid-template-columns:0 minmax(0,1fr) minmax(230px,300px) !important; gap:24px !important; }
+.map-workspace.initiative-hidden { grid-template-columns:minmax(210px,280px) minmax(0,1fr) 0 !important; gap:24px !important; }
+
+@media(max-width:1050px){
+  .map-workspace { grid-template-columns:minmax(190px,230px) minmax(0,1fr) minmax(205px,250px) !important; gap:18px !important; }
+  .map-workspace.toolbar-hidden { grid-template-columns:0 minmax(0,1fr) minmax(205px,250px) !important; }
+  .map-workspace.initiative-hidden { grid-template-columns:minmax(190px,230px) minmax(0,1fr) 0 !important; }
+}
+@media(max-width:780px){
+  .map-workspace { grid-template-columns:1fr !important; grid-template-rows:auto minmax(0,1fr) auto !important; gap:14px !important; padding:10px !important; overflow:auto !important; }
+  .map-workspace .map-left-rail,.map-workspace .map-right-rail { min-height:0 !important; height:auto !important; }
+  .map-workspace .map-toolbar,.map-workspace .initiative-panel { position:relative !important; left:0 !important; top:0 !important; width:100% !important; max-height:34vh !important; height:auto !important; }
+  .map-workspace .map-stage-wrap { grid-column:1 !important; grid-row:2 !important; min-height:500px !important; height:60vh !important; }
+  .map-workspace .map-left-rail { grid-column:1 !important; grid-row:1 !important; }
+  .map-workspace .map-right-rail { grid-column:1 !important; grid-row:3 !important; }
+  .map-workspace.toolbar-hidden,.map-workspace.initiative-hidden { grid-template-columns:1fr !important; }
+  .map-workspace .panel-resize-handle.edge-left,.map-workspace .panel-resize-handle.edge-right { display:none !important; }
+}
+
+/* FINAL DESKTOP VTT SHELL: the map is a real application viewport, not a page-length mobile stack. */
+@media (min-width: 781px){
+  body.map-page{overflow:hidden;}
+  body.map-page #app{height:100vh;min-height:100vh;overflow:hidden;}
+  body.map-page #main-content{height:calc(100vh - 70px);min-height:0;box-sizing:border-box;overflow:hidden;padding:18px 22px 22px;max-width:none;}
+  body.map-page #map-section{height:100%;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
+  body.map-page #map-section > .section-header{flex:0 0 auto;}
+  body.map-page #map-vtt{flex:1 1 auto;min-height:0!important;height:auto!important;max-height:none;overflow:hidden;}
+  body.map-page .map-workspace .map-side-rail{height:100%;min-height:0;overflow:visible;}
+  body.map-page .map-workspace .map-stage-wrap{height:100%;min-height:0;overflow:hidden;}
+}
+
+/* The side panels are adjustable inside their own rails. */
+.map-workspace .map-toolbar,
+.map-workspace .initiative-panel{
+  width:calc(100% - 16px);
+  min-width:150px;
+  min-height:130px;
+  box-sizing:border-box;
+  opacity:.56;
+  background:rgba(8,10,13,.68)!important;
+  border:1px solid rgba(235,210,145,.12)!important;
+  box-shadow:0 10px 28px rgba(0,0,0,.28)!important;
+  backdrop-filter:blur(10px);
+  transition:opacity .16s ease,box-shadow .16s ease,border-color .16s ease;
+}
+.map-workspace .map-toolbar:hover,
+.map-workspace .map-toolbar:focus-within,
+.map-workspace .initiative-panel:hover,
+.map-workspace .initiative-panel:focus-within,
+.map-workspace .map-toolbar.is-dragging,
+.map-workspace .initiative-panel.is-dragging{opacity:.96;box-shadow:0 16px 40px rgba(0,0,0,.5)!important;border-color:rgba(235,210,145,.3)!important;}
+.map-workspace .floating-panel-drag-handle{cursor:grab!important;}
+.map-workspace .floating-panel-drag-handle:hover{cursor:grab!important;}
+.map-workspace .floating-panel-drag-handle.dragging{cursor:grabbing!important;}
+.map-workspace .panel-resize-handle{opacity:0!important;}
+.map-workspace .map-toolbar:hover .panel-resize-handle,
+.map-workspace .map-toolbar:focus-within .panel-resize-handle,
+.map-workspace .initiative-panel:hover .panel-resize-handle,
+.map-workspace .initiative-panel:focus-within .panel-resize-handle{opacity:1!important;background:rgba(235,210,145,.12)!important;}
+
+/* Keep the map itself inside the center viewport. */
+.map-workspace .map-stage-wrap{touch-action:none!important;overscroll-behavior:contain!important;}
+.map-workspace .map-stage-wrap.pan-tool-active{cursor:grab!important;}
+.map-workspace .map-stage-wrap.pan-tool-active .map-stage{cursor:grab!important;}
+.map-workspace .map-stage-wrap.pan-tool-active.is-panning,
+.map-workspace .map-stage-wrap.pan-tool-active.is-panning .map-stage{cursor:grabbing!important;}
+
+@media (max-width:780px){
+  body.map-page{overflow:auto;}
+  body.map-page #main-content{height:auto;overflow:visible;padding:12px;}
+  body.map-page #map-section{height:auto;overflow:visible;}
+  body.map-page #map-vtt{height:auto!important;min-height:0!important;overflow:visible;}
+}
+
+/* ================================================================
+   VTT APPLICATION WINDOWS
+   Toolbar, map viewer and combat tracker are independent floating
+   workspaces on the whole VTT surface. This intentionally overrides
+   the older rail/grid generations above.
+   ================================================================ */
+@media (min-width: 781px){
+  body.map-page #main-content{position:fixed!important;inset:var(--nav-h,56px) 0 0 0!important;height:calc(100vh - var(--nav-h,56px))!important;padding:0!important;}
+  body.map-page #map-section{position:absolute!important;inset:0!important;height:100%!important;display:flex!important;flex-direction:column!important;}
+  body.map-page #map-section[hidden]{display:none!important;}
+  body.map-page #map-section > .section-header{display:flex!important;flex:0 0 auto!important;margin:0!important;}
+  body.map-page #map-vtt.map-workspace{
+    position:relative!important;inset:auto!important;flex:1 1 auto!important;
+    display:block!important;width:100%!important;height:auto!important;
+    min-height:0!important;max-height:none!important;overflow:hidden!important;
+    padding:0!important;margin:0!important;border:0!important;border-radius:0!important;
+    background:transparent!important;
+  }
+
+  /* Old rails no longer own layout. */
+  #map-vtt .map-side-rail{display:none!important;}
+
+  /* Every workspace is a real panel with its own background. */
+  #map-vtt > .map-toolbar,
+  #map-vtt > .map-stage-wrap,
+  #map-vtt > .initiative-panel{
+    position:absolute!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:none!important;
+    max-height:none!important;
+    overflow:hidden!important;
+    border:1px solid rgba(190,200,215,.18)!important;
+    border-radius:10px!important;
+    background:rgba(9,11,15,.90)!important;
+    box-shadow:0 18px 55px rgba(0,0,0,.52), inset 0 1px rgba(255,255,255,.025)!important;
+    backdrop-filter:blur(14px);
+  }
+
+  #map-vtt > .map-toolbar{
+    z-index:80!important;
+    padding:34px 10px 12px!important;
+    overflow:auto!important;
+  }
+  #map-vtt > .map-stage-wrap{
+    z-index:20!important;
+    padding:38px 12px 12px!important;
+    background:rgba(5,7,10,.96)!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    overflow:hidden!important;
+  }
+  #map-vtt > .initiative-panel{
+    z-index:70!important;
+    padding-top:34px!important;
+    overflow:hidden!important;
+  }
+
+  /* The map viewer has its own dark "window" background, independent of the page. */
+  #map-vtt > .map-stage-wrap .map-stage{
+    flex:0 0 auto!important;
+    max-width:none!important;
+    max-height:none!important;
+    margin:0!important;
+    background-color:#000!important;
+    box-shadow:0 12px 38px rgba(0,0,0,.65)!important;
+  }
+  #map-vtt > .map-stage-wrap .map-image-layer{pointer-events:none!important;user-select:none!important;-webkit-user-drag:none!important;}
+  #map-vtt > .map-stage-wrap #map-draw,
+  #map-vtt > .map-stage-wrap #map-fog,
+  #map-vtt > .map-stage-wrap #map-tokens{pointer-events:none;}
+
+  /* Window title strips. */
+  #map-vtt .floating-panel-drag-handle{
+    position:absolute!important;
+    left:0!important;right:0!important;top:0!important;
+    height:32px!important;box-sizing:border-box!important;
+    display:flex!important;align-items:center!important;gap:7px!important;
+    padding:0 10px!important;
+    border-bottom:1px solid rgba(190,200,215,.10)!important;
+    background:rgba(20,23,29,.68)!important;
+    color:rgba(235,238,244,.72)!important;
+    font-size:11px!important;letter-spacing:.08em!important;text-transform:uppercase!important;
+    user-select:none!important;touch-action:none!important;
+    cursor:grab!important;z-index:10!important;
+  }
+  #map-vtt .floating-panel-drag-handle.dragging{cursor:grabbing!important;background:rgba(30,34,42,.88)!important;color:#fff!important;}
+  #map-vtt .map-viewer-drag-handle{z-index:15!important;}
+
+  /* Toolbar/Tracker are no longer visually attached to the map. */
+  #map-vtt > .map-toolbar:hover,
+  #map-vtt > .map-toolbar:focus-within,
+  #map-vtt > .initiative-panel:hover,
+  #map-vtt > .initiative-panel:focus-within,
+  #map-vtt > .map-stage-wrap:hover,
+  #map-vtt > .map-stage-wrap:focus-within{border-color:rgba(235,210,145,.30)!important;box-shadow:0 20px 65px rgba(0,0,0,.64)!important;}
+
+  /* Resize handles belong to each window, not the old side rails. */
+  #map-vtt > .map-toolbar .panel-resize-handle,
+  #map-vtt > .initiative-panel .panel-resize-handle,
+  #map-vtt > .map-stage-wrap .panel-resize-handle{opacity:0!important;z-index:30!important;}
+  #map-vtt > .map-toolbar:hover .panel-resize-handle,
+  #map-vtt > .map-toolbar:focus-within .panel-resize-handle,
+  #map-vtt > .initiative-panel:hover .panel-resize-handle,
+  #map-vtt > .initiative-panel:focus-within .panel-resize-handle,
+  #map-vtt > .map-stage-wrap:hover .panel-resize-handle,
+  #map-vtt > .map-stage-wrap:focus-within .panel-resize-handle{opacity:1!important;background:rgba(235,210,145,.12)!important;}
+
+  #map-vtt .panel-resize-handle.edge-left{left:-4px!important;top:8px!important;bottom:8px!important;width:9px!important;cursor:ew-resize!important;}
+  #map-vtt .panel-resize-handle.edge-right{right:-4px!important;top:8px!important;bottom:8px!important;width:9px!important;cursor:ew-resize!important;}
+  #map-vtt .panel-resize-handle.edge-top{top:-4px!important;left:8px!important;right:8px!important;height:9px!important;cursor:ns-resize!important;}
+  #map-vtt .panel-resize-handle.edge-bottom{bottom:-4px!important;left:8px!important;right:8px!important;height:9px!important;cursor:ns-resize!important;}
+  #map-vtt .panel-resize-handle.corner-nw{left:-5px!important;top:-5px!important;width:14px!important;height:14px!important;cursor:nwse-resize!important;}
+  #map-vtt .panel-resize-handle.corner-ne{right:-5px!important;top:-5px!important;width:14px!important;height:14px!important;cursor:nesw-resize!important;}
+  #map-vtt .panel-resize-handle.corner-sw{left:-5px!important;bottom:-5px!important;width:14px!important;height:14px!important;cursor:nesw-resize!important;}
+  #map-vtt .panel-resize-handle.corner-se{right:-5px!important;bottom:-5px!important;width:14px!important;height:14px!important;cursor:nwse-resize!important;}
+
+  /* Map panning is handled by the actual stage/image surface, not the empty panel background. */
+  #map-vtt > .map-stage-wrap.pan-tool-active{cursor:grab!important;}
+  #map-vtt > .map-stage-wrap.pan-tool-active .map-stage,
+  #map-vtt > .map-stage-wrap.pan-tool-active .map-image-layer{cursor:grab!important;}
+  #map-vtt > .map-stage-wrap.pan-tool-active.is-panning,
+  #map-vtt > .map-stage-wrap.pan-tool-active.is-panning .map-stage,
+  #map-vtt > .map-stage-wrap.pan-tool-active.is-panning .map-image-layer{cursor:grabbing!important;}
+
+  /* The small Tools button is itself a floating window control. */
+  #map-vtt > #map-toolbar-toggle{position:absolute!important;left:12px!important;top:12px!important;z-index:100!important;}
+}
+
+@media (max-width:780px){
+  /* Mobile keeps the familiar stacked flow, while still separating the panels visually. */
+  #map-vtt .map-toolbar,
+  #map-vtt .map-stage-wrap,
+  #map-vtt .initiative-panel{border-radius:10px!important;background:rgba(9,11,15,.92)!important;}
+}
+
+/* ============================================================
+   Kousha's Table VTT window manager, authoritative final layer
+   ============================================================ */
+@media (min-width:781px){
+  body.map-page #map-vtt{
+    position:relative!important;
+    display:block!important;
+    width:100%!important;
+    height:calc(100vh - var(--nav-h,64px) - 24px)!important;
+    min-height:620px!important;
+    overflow:hidden!important;
+    background:#050608!important;
+    border:1px solid rgba(220,210,190,.12)!important;
+    border-radius:10px!important;
+  }
+  body.map-page #map-vtt > .map-toolbar,
+  body.map-page #map-vtt > .map-stage-wrap,
+  body.map-page #map-vtt > .initiative-panel{
+    position:absolute!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:none!important;
+    max-height:none!important;
+    border:1px solid rgba(220,210,190,.18)!important;
+    border-radius:10px!important;
+    background:rgba(11,13,17,.96)!important;
+    box-shadow:0 18px 55px rgba(0,0,0,.62), inset 0 1px rgba(255,255,255,.025)!important;
+    overflow:hidden!important;
+  }
+  body.map-page #map-vtt > .map-toolbar{
+    overflow:auto!important;
+    padding:42px 12px 14px!important;
+  }
+  body.map-page #map-vtt > .map-stage-wrap{
+    padding:38px 12px 12px!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    background:#020304!important;
+    z-index:20!important;
+  }
+  body.map-page #map-vtt > .initiative-panel{
+    padding:38px 10px 12px!important;
+    overflow:auto!important;
+    z-index:70!important;
+  }
+  body.map-page #map-vtt .floating-panel-drag-handle{
+    position:absolute!important;
+    inset:0 0 auto 0!important;
+    width:100%!important;
+    height:34px!important;
+    min-height:34px!important;
+    box-sizing:border-box!important;
+    z-index:1000!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:flex-start!important;
+    padding:0 12px!important;
+    margin:0!important;
+    border:0!important;
+    border-bottom:1px solid rgba(220,210,190,.13)!important;
+    border-radius:9px 9px 0 0!important;
+    background:linear-gradient(180deg,rgba(34,37,43,.98),rgba(17,19,23,.98))!important;
+    color:#e7e1d5!important;
+    font-family:var(--font-display,system-ui,sans-serif)!important;
+    font-size:.78rem!important;
+    font-weight:800!important;
+    letter-spacing:.12em!important;
+    text-transform:uppercase!important;
+    pointer-events:auto!important;
+    cursor:grab!important;
+    user-select:none!important;
+  }
+  body.map-page #map-vtt .floating-panel-drag-handle.dragging{cursor:grabbing!important;background:linear-gradient(180deg,rgba(65,48,28,.98),rgba(25,21,17,.98))!important;}
+  body.map-page #map-vtt .map-viewer-drag-handle{z-index:1000!important;}
+  body.map-page #map-vtt > .map-stage-wrap .map-stage{position:relative!important;z-index:1!important;flex:0 0 auto!important;margin:0!important;}
+  body.map-page #map-vtt > .map-stage-wrap #map-image{pointer-events:auto!important;user-select:none!important;-webkit-user-drag:none!important;}
+  body.map-page #map-vtt > .map-stage-wrap #map-draw,
+  body.map-page #map-vtt > .map-stage-wrap #map-fog{pointer-events:none!important;}
+  body.map-page #map-vtt > .map-stage-wrap #map-tokens{pointer-events:auto!important;z-index:10!important;}
+  body.map-page #map-vtt > .map-stage-wrap.pan-tool-active,
+  body.map-page #map-vtt > .map-stage-wrap.pan-tool-active *{cursor:grab!important;}
+  body.map-page #map-vtt > .map-stage-wrap.is-panning,
+  body.map-page #map-vtt > .map-stage-wrap.is-panning *{cursor:grabbing!important;}
+  body.map-page #map-vtt > #map-toolbar-toggle{z-index:2000!important;}
+}
+
+/* Legible UI: stop the tiny, thin, blurry cockpit-text problem. */
+body{font-size:16px;}
+button,input,select,textarea{font-size:1rem;}
+button{font-weight:700;}
+.muted{opacity:.92;}
+.small{font-size:.88rem!important;}
+.eyebrow,.tool-title,.field label,.badge{font-weight:800;}
+.map-toolbar,.initiative-panel{font-size:.96rem!important;}
+.map-toolbar .tool-title,.initiative-panel .tool-title{font-size:.86rem!important;letter-spacing:.08em;}
+.map-toolbar .field>span{font-size:.82rem!important;font-weight:700;}
+.map-toolbar .check-row{font-size:.92rem!important;font-weight:600;}
+
+/* Token interaction and token-management rows. */
+.map-token{pointer-events:auto!important;cursor:grab!important;z-index:20!important;touch-action:none!important;}
+.map-token:active{cursor:grabbing!important;}
+.present-token-list{display:grid;gap:8px;max-height:65vh;overflow:auto;}
+.present-token-row{display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px;border:1px solid rgba(255,255,255,.10);border-radius:8px;background:rgba(255,255,255,.035);}
+.present-token-preview{width:48px;height:48px;display:grid;place-items:center;overflow:hidden;border-radius:7px;background:#171a1f;border:1px solid rgba(255,255,255,.10);font-weight:900;font-size:1.1rem;}
+.present-token-preview img{width:100%;height:100%;object-fit:contain;}
+.tracker-remove-btn{margin-left:4px!important;border:1px solid rgba(190,80,70,.45)!important;background:rgba(90,24,22,.5)!important;color:#ffd9d3!important;border-radius:5px!important;min-width:28px!important;height:26px!important;font-weight:900!important;}
+.tracker-remove-btn:hover{background:rgba(130,35,30,.75)!important;}
+
+/* Home command deck. */
+.home-page{max-width:1200px;margin:0 auto;padding:clamp(20px,5vw,60px) 0;}
+.home-hero{padding:28px 0 34px;}
+.home-hero h1{font-size:clamp(2.4rem,6vw,5rem);margin:.15em 0 .25em;}
+.home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;}
+.home-card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:190px;text-align:left;cursor:pointer;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;}
+.home-card:hover{transform:translateY(-2px);border-color:rgba(235,210,145,.42);box-shadow:0 16px 40px rgba(0,0,0,.25);}
+.home-card-icon{font-size:1.7rem;color:var(--accent-bright,var(--accent));}
+.home-card strong{font-family:var(--font-display,system-ui);font-size:1.25rem;}
+.home-card-open{margin-top:auto;font-weight:800;color:var(--accent-bright,var(--accent));}
+
+@media(max-width:780px){
+  .present-token-row{grid-template-columns:42px minmax(0,1fr);}
+  .present-token-row button{grid-column:1/-1;width:100%;}
+  .home-page{padding:20px 0;}
+  .home-grid{grid-template-columns:1fr;}
+}
+
+/* ============================================================
+   Kousha's Table: isolated Map Viewer window
+   The viewer is an actual sibling workspace, not the stage itself.
+   ============================================================ */
+@media (min-width:781px){
+  body.map-page #map-vtt > .map-viewer-window{
+    position:absolute!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    min-width:300px!important;
+    min-height:220px!important;
+    max-width:none!important;
+    max-height:none!important;
+    border:1px solid rgba(220,210,190,.18)!important;
+    border-radius:10px!important;
+    background:#020304!important;
+    box-shadow:0 18px 55px rgba(0,0,0,.68), inset 0 1px rgba(255,255,255,.025)!important;
+    overflow:hidden!important;
+    z-index:40!important;
+  }
+  body.map-page #map-vtt > .map-viewer-window > .map-viewer-drag-handle{
+    position:absolute!important;
+    inset:0 0 auto 0!important;
+    width:100%!important;
+    height:36px!important;
+    min-height:36px!important;
+    box-sizing:border-box!important;
+    z-index:10000!important;
+    display:flex!important;
+    align-items:center!important;
+    padding:0 12px!important;
+    margin:0!important;
+    border:0!important;
+    border-bottom:1px solid rgba(220,210,190,.16)!important;
+    border-radius:9px 9px 0 0!important;
+    background:linear-gradient(180deg,rgba(34,37,43,.99),rgba(17,19,23,.99))!important;
+    color:#eee8dc!important;
+    font-family:var(--font-display,system-ui,sans-serif)!important;
+    font-size:.82rem!important;
+    font-weight:850!important;
+    letter-spacing:.12em!important;
+    text-transform:uppercase!important;
+    pointer-events:auto!important;
+    cursor:grab!important;
+    user-select:none!important;
+    touch-action:none!important;
+  }
+  body.map-page #map-vtt > .map-viewer-window > .map-viewer-drag-handle.dragging{cursor:grabbing!important;background:linear-gradient(180deg,rgba(65,48,28,.99),rgba(25,21,17,.99))!important;}
+  body.map-page #map-vtt > .map-viewer-window > .map-stage-wrap{
+    position:absolute!important;
+    inset:36px 0 0 0!important;
+    width:auto!important;
+    height:auto!important;
+    min-width:0!important;
+    min-height:0!important;
+    max-width:none!important;
+    max-height:none!important;
+    box-sizing:border-box!important;
+    padding:12px!important;
+    border:0!important;
+    border-radius:0!important;
+    background:#020304!important;
+    overflow:auto!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    z-index:1!important;
+  }
+  body.map-page #map-vtt > .map-viewer-window .map-stage{z-index:2!important;}
+  body.map-page #map-vtt > .map-viewer-window .panel-resize-handle{z-index:11000!important;}
+  body.map-page #map-vtt > .map-viewer-window .map-stage-wrap .map-viewer-drag-handle{display:none!important;}
+}
+
+/* Home cards use their own container width, so titles and descriptions never spill out. */
+.home-card{container-type:inline-size;min-width:0;overflow:hidden;box-sizing:border-box;}
+.home-card > *{min-width:0;max-width:100%;box-sizing:border-box;}
+.home-card strong{display:block;width:100%;font-size:clamp(.95rem,7cqw,1.25rem);line-height:1.12;overflow-wrap:anywhere;word-break:break-word;}
+.home-card .muted{display:block;width:100%;font-size:clamp(.72rem,4.7cqw,.9rem)!important;line-height:1.4;overflow-wrap:anywhere;word-break:break-word;}
+.home-card-open{font-size:clamp(.75rem,4.5cqw,.92rem);line-height:1.2;white-space:normal;overflow-wrap:anywhere;}
+.home-card-icon{font-size:clamp(1.2rem,8cqw,1.7rem);flex:0 0 auto;}
+
+/* FINAL FREEFORM VTT WINDOW LAYER: 100% browser zoom / independent map viewer resizing */
+@media (min-width:781px){
+  body.map-page #main-content{min-height:0!important;height:calc(100vh - var(--nav-height,70px))!important;overflow:hidden!important;}
+  body.map-page #map-section{height:100%!important;min-height:0!important;display:flex!important;flex-direction:column!important;overflow:hidden!important;}
+  body.map-page #map-section>.section-header{flex:0 0 auto!important;}
+  body.map-page #map-vtt.map-workspace{
+    flex:1 1 auto!important;min-height:0!important;height:auto!important;width:100%!important;
+    position:relative!important;display:block!important;overflow:hidden!important;
+    margin:0!important;padding:0!important;background:#07090c!important;border:1px solid #242a31!important;
+    border-radius:12px!important;box-sizing:border-box!important;
+  }
+  body.map-page #map-vtt>.map-viewer-window,
+  body.map-page #map-vtt>.map-toolbar,
+  body.map-page #map-vtt>.initiative-panel{
+    position:absolute!important;box-sizing:border-box!important;margin:0!important;
+    display:block!important;overflow:hidden!important;transform:none!important;
+    z-index:20!important;
+  }
+  body.map-page #map-vtt>.map-viewer-window{
+    background:#090b0e!important;border:1px solid #343a43!important;border-radius:10px!important;
+    box-shadow:0 14px 42px rgba(0,0,0,.55)!important;min-width:320px!important;min-height:220px!important;
+    z-index:10!important;
+  }
+  body.map-page #map-vtt>.map-toolbar,
+  body.map-page #map-vtt>.initiative-panel{
+    background:rgba(12,14,18,.96)!important;border:1px solid #343a43!important;border-radius:10px!important;
+    box-shadow:0 14px 42px rgba(0,0,0,.55)!important;min-width:170px!important;min-height:130px!important;
+  }
+  body.map-page .map-viewer-window>.map-stage-wrap{
+    position:absolute!important;left:0!important;right:0!important;top:38px!important;bottom:0!important;
+    width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;
+    padding:10px!important;margin:0!important;border:0!important;border-radius:0!important;
+    overflow:auto!important;background:#000!important;display:flex!important;align-items:center!important;justify-content:center!important;
+    box-sizing:border-box!important;
+  }
+  body.map-page .map-viewer-drag-handle{
+    position:absolute!important;left:0!important;right:0!important;top:0!important;height:38px!important;
+    display:flex!important;align-items:center!important;padding:0 12px!important;box-sizing:border-box!important;
+    z-index:100!important;background:linear-gradient(#191d23,#111419)!important;border-bottom:1px solid #343a43!important;
+    color:#e8e3d8!important;font-size:14px!important;font-weight:700!important;cursor:grab!important;touch-action:none!important;
+    user-select:none!important;
+  }
+  body.map-page .map-viewer-drag-handle.dragging{cursor:grabbing!important;}
+  body.map-page .map-viewer-window .panel-resize-handle{z-index:120!important;pointer-events:auto!important;}
+  body.map-page .map-viewer-window .panel-resize-handle.edge-left,
+  body.map-page .map-viewer-window .panel-resize-handle.edge-right{top:8px!important;bottom:8px!important;width:10px!important;height:auto!important;}
+  body.map-page .map-viewer-window .panel-resize-handle.edge-left{left:-5px!important;right:auto!important;cursor:ew-resize!important;background:none!important;}
+  body.map-page .map-viewer-window .panel-resize-handle.edge-right{right:-5px!important;left:auto!important;cursor:ew-resize!important;background:none!important;}
+  body.map-page .map-viewer-window .panel-resize-handle.edge-top,
+  body.map-page .map-viewer-window .panel-resize-handle.edge-bottom{left:8px!important;right:8px!important;width:auto!important;height:10px!important;}
+  body.map-page .map-viewer-window .panel-resize-handle.edge-top{top:-5px!important;bottom:auto!important;cursor:ns-resize!important;background:none!important;}
+  body.map-page .map-viewer-window .panel-resize-handle.edge-bottom{bottom:-5px!important;top:auto!important;cursor:ns-resize!important;background:none!important;}
+  body.map-page .map-viewer-window .panel-resize-handle.corner-nw,
+  body.map-page .map-viewer-window .panel-resize-handle.corner-ne,
+  body.map-page .map-viewer-window .panel-resize-handle.corner-sw,
+  body.map-page .map-viewer-window .panel-resize-handle.corner-se{width:16px!important;height:16px!important;background:none!important;}
+  body.map-page .map-viewer-window .panel-resize-handle.corner-nw{left:-5px!important;top:-5px!important;right:auto!important;bottom:auto!important;cursor:nwse-resize!important;}
+  body.map-page .map-viewer-window .panel-resize-handle.corner-ne{right:-5px!important;top:-5px!important;left:auto!important;bottom:auto!important;cursor:nesw-resize!important;}
+  body.map-page .map-viewer-window .panel-resize-handle.corner-sw{left:-5px!important;bottom:-5px!important;right:auto!important;top:auto!important;cursor:nesw-resize!important;}
+  body.map-page .map-viewer-window .panel-resize-handle.corner-se{right:-5px!important;bottom:-5px!important;left:auto!important;top:auto!important;cursor:nwse-resize!important;}
+  body.map-page #map-vtt>.map-toolbar{z-index:30!important;}
+  body.map-page #map-vtt>.initiative-panel{z-index:31!important;}
+  body.map-page #map-vtt>.map-toolbar .panel-resize-handle,
+  body.map-page #map-vtt>.initiative-panel .panel-resize-handle{z-index:120!important;pointer-events:auto!important;}
+  body.map-page #map-vtt>.map-toolbar .floating-panel-drag-handle,
+  body.map-page #map-vtt>.initiative-panel .floating-panel-drag-handle{position:relative!important;z-index:100!important;}
+}
+@media (max-width:780px){
+  body.map-page #main-content{height:auto!important;min-height:0!important;overflow:visible!important;}
+}
+
+/* ================================================================
+   AUTHORITATIVE FREEFORM WORKSPACE LAYER
+   Keep all three VTT windows independent. This block intentionally
+   comes last so legacy layout generations cannot override it.
+   ================================================================ */
+@media (min-width:781px){
+  body.map-page #map-vtt.map-workspace{
+    position:relative!important;
+    display:block!important;
+    width:100%!important;
+    height:100%!important;
+    min-height:0!important;
+    overflow:hidden!important;
+    isolation:isolate!important;
+  }
+
+  /* Every workspace is a real independent window. */
+  body.map-page #map-vtt > .map-toolbar,
+  body.map-page #map-vtt > .initiative-panel,
+  body.map-page #map-vtt > .map-viewer-window{
+    position:absolute!important;
+    box-sizing:border-box!important;
+    margin:0!important;
+    transform:none!important;
+    max-width:none!important;
+    max-height:none!important;
+  }
+
+  /* Toolbar and Combat Tracker retain their own scrolling sidebars. */
+  body.map-page #map-vtt > .map-toolbar,
+  body.map-page #map-vtt > .initiative-panel{
+    overflow:auto!important;
+    overscroll-behavior:contain!important;
+    scrollbar-width:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    display:block!important;
+  }
+
+  /* Their drag bars are always visible and never become part of the scroll body. */
+  body.map-page #map-vtt > .map-toolbar > .floating-panel-drag-handle,
+  body.map-page #map-vtt > .initiative-panel > .floating-panel-drag-handle{
+    position:sticky!important;
+    top:0!important;
+    z-index:100!important;
+    display:flex!important;
+    flex:0 0 34px!important;
+    height:34px!important;
+    min-height:34px!important;
+    box-sizing:border-box!important;
+    align-items:center!important;
+    justify-content:center!important;
+    pointer-events:auto!important;
+    cursor:grab!important;
+    user-select:none!important;
+    touch-action:none!important;
+    background:linear-gradient(180deg,rgba(31,34,40,.99),rgba(17,19,23,.98))!important;
+    border-bottom:1px solid rgba(220,210,190,.18)!important;
+    margin:0!important;
+    padding:0 10px!important;
+  }
+  body.map-page #map-vtt > .map-toolbar > .floating-panel-drag-handle.dragging,
+  body.map-page #map-vtt > .initiative-panel > .floating-panel-drag-handle.dragging{
+    cursor:grabbing!important;
+  }
+
+  /* Full eight-direction resize system for Toolbar + Combat Tracker. */
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle{
+    position:absolute!important;
+    z-index:1000!important;
+    display:block!important;
+    opacity:0!important;
+    pointer-events:auto!important;
+    background:transparent!important;
+    margin:0!important;
+    padding:0!important;
+  }
+  body.map-page #map-vtt > .map-toolbar:hover > .panel-resize-handle,
+  body.map-page #map-vtt > .map-toolbar:focus-within > .panel-resize-handle,
+  body.map-page #map-vtt > .initiative-panel:hover > .panel-resize-handle,
+  body.map-page #map-vtt > .initiative-panel:focus-within > .panel-resize-handle{
+    opacity:1!important;
+  }
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.edge-left,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.edge-left{
+    left:-5px!important; top:8px!important; bottom:8px!important; width:10px!important; height:auto!important; cursor:ew-resize!important;
+  }
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.edge-right,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.edge-right{
+    right:-5px!important; top:8px!important; bottom:8px!important; width:10px!important; height:auto!important; cursor:ew-resize!important;
+  }
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.edge-top,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.edge-top{
+    left:8px!important; right:8px!important; top:-5px!important; width:auto!important; height:10px!important; cursor:ns-resize!important;
+  }
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.edge-bottom,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.edge-bottom{
+    left:8px!important; right:8px!important; bottom:-5px!important; width:auto!important; height:10px!important; cursor:ns-resize!important;
+  }
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.corner-nw,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.corner-nw{
+    left:-6px!important; top:-6px!important; width:16px!important; height:16px!important; cursor:nwse-resize!important;
+  }
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.corner-ne,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.corner-ne{
+    right:-6px!important; top:-6px!important; width:16px!important; height:16px!important; cursor:nesw-resize!important;
+  }
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.corner-sw,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.corner-sw{
+    left:-6px!important; bottom:-6px!important; width:16px!important; height:16px!important; cursor:nesw-resize!important;
+  }
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.corner-se,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.corner-se{
+    right:-6px!important; bottom:-6px!important; width:16px!important; height:16px!important; cursor:nwse-resize!important;
+  }
+
+  /* Map Viewer uses the exact same eight-direction system. */
+  body.map-page #map-vtt > .map-viewer-window{
+    overflow:hidden!important;
+    z-index:10!important;
+  }
+  body.map-page #map-vtt > .map-viewer-window > .map-viewer-drag-handle{
+    pointer-events:auto!important;
+    z-index:100!important;
+    cursor:grab!important;
+    touch-action:none!important;
+  }
+  body.map-page #map-vtt > .map-viewer-window > .map-viewer-drag-handle.dragging{cursor:grabbing!important;}
+  body.map-page #map-vtt > .map-viewer-window > .panel-resize-handle{
+    position:absolute!important;
+    z-index:1000!important;
+    display:block!important;
+    opacity:0!important;
+    pointer-events:auto!important;
+    background:transparent!important;
+  }
+  body.map-page #map-vtt > .map-viewer-window:hover > .panel-resize-handle,
+  body.map-page #map-vtt > .map-viewer-window:focus-within > .panel-resize-handle{opacity:1!important;}
+}
+
+/* ================================================================
+   STABILITY / GEOMETRY PASS
+   - Token death icon scales from the token itself.
+   - Floating windows have no artificial chrome padding.
+   - Workspace headers stay flush with their window edges.
+   - Sidebar scrollbars belong to the complete panel body.
+   - Browser/page scrolling remains available when content exceeds
+     the viewport instead of being globally clipped.
+   ================================================================ */
+.map-token,
+.player-map-token{
+  container-type:size;
+  container-name:token;
+}
+.map-token .token-dead-overlay,
+.player-map-token .token-dead-overlay{
+  inset:0!important;
+  display:grid!important;
+  place-items:center!important;
+  width:100%!important;
+  height:100%!important;
+  font-size:clamp(8px,52cqw,44px)!important;
+  line-height:1!important;
+  font-weight:900!important;
+  padding:0!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  transform:none!important;
+}
+
+@media (min-width:781px){
+  html,body{
+    min-height:100%!important;
+    height:auto!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+  }
+
+  /* The page is allowed to scroll. The map window itself remains a
+     contained tabletop surface, while other application pages can grow. */
+  body.map-page #main-content{
+    height:auto!important;
+    min-height:calc(100vh - var(--nav-height,70px))!important;
+    overflow:visible!important;
+  }
+  body.map-page #map-section{
+    height:auto!important;
+    min-height:calc(100vh - var(--nav-height,70px) - 78px)!important;
+    overflow:visible!important;
+  }
+  body.map-page #map-vtt.map-workspace{
+    height:calc(100vh - var(--nav-height,70px) - 130px)!important;
+    min-height:620px!important;
+    overflow:visible!important;
+  }
+
+  /* Toolbar and Combat Tracker: the drag bar is the true top edge.
+     Remove legacy top/bottom padding that created dead space. */
+  body.map-page #map-vtt > .map-toolbar,
+  body.map-page #map-vtt > .initiative-panel{
+    padding:0!important;
+    overflow:auto!important;
+    scrollbar-gutter:stable!important;
+    overscroll-behavior:contain!important;
+  }
+  body.map-page #map-vtt > .map-toolbar > .floating-panel-drag-handle,
+  body.map-page #map-vtt > .initiative-panel > .floating-panel-drag-handle{
+    flex:0 0 34px!important;
+    height:34px!important;
+    min-height:34px!important;
+    margin:0!important;
+    position:sticky!important;
+    top:0!important;
+  }
+  body.map-page #map-vtt > .map-toolbar > .tool-group{
+    margin:0!important;
+    padding:10px 12px!important;
+  }
+  body.map-page #map-vtt > .map-toolbar > .tool-group:last-of-type{
+    padding-bottom:12px!important;
+  }
+  body.map-page #map-vtt > .initiative-panel > .initiative-panel-header{
+    margin:0!important;
+    padding:10px 12px 8px!important;
+  }
+  body.map-page #map-vtt > .initiative-panel > .initiative-panel-round,
+  body.map-page #map-vtt > .initiative-panel > .initiative-panel-list{
+    margin-left:0!important;
+    margin-right:0!important;
+  }
+  body.map-page #map-vtt > .initiative-panel > .initiative-panel-round{
+    padding:8px 12px!important;
+  }
+  body.map-page #map-vtt > .initiative-panel > .initiative-panel-list{
+    padding:0 12px 12px!important;
+  }
+
+  /* Keep the resize boundary flush to the actual outer panel. */
+  body.map-page #map-vtt > .map-toolbar > .panel-resize-handle,
+  body.map-page #map-vtt > .initiative-panel > .panel-resize-handle,
+  body.map-page #map-vtt > .map-viewer-window > .panel-resize-handle{
+    box-sizing:border-box!important;
+  }
+
+  /* Map viewer has exactly one chrome strip and its content begins
+     immediately underneath it. */
+  body.map-page #map-vtt > .map-viewer-window{
+    padding:0!important;
+    overflow:hidden!important;
+  }
+  body.map-page #map-vtt > .map-viewer-window > .map-viewer-drag-handle{
+    margin:0!important;
+  }
+  body.map-page #map-vtt > .map-viewer-window > .map-stage-wrap{
+    margin:0!important;
+    padding:10px!important;
+    top:38px!important;
+    bottom:0!important;
+    height:auto!important;
+    box-sizing:border-box!important;
+    overflow:auto!important;
+    scrollbar-gutter:stable!important;
+  }
+}
+
+@media (max-width:780px){
+  html,body{height:auto!important;min-height:100%!important;overflow-x:hidden!important;overflow-y:auto!important;}
+  body.map-page #main-content{height:auto!important;min-height:0!important;overflow:visible!important;}
+  body.map-page #map-section{height:auto!important;min-height:0!important;overflow:visible!important;}
+}
+
+/* Armory / War Room libraries */
+.library-modal-backdrop{backdrop-filter:blur(7px);background:rgba(2,3,5,.78)}
+.library-modal{max-height:min(92vh,980px);overflow:hidden;padding:0!important;background:linear-gradient(145deg,rgba(19,21,26,.98),rgba(8,9,12,.99));border:1px solid rgba(235,210,145,.2);box-shadow:0 30px 100px rgba(0,0,0,.75)}
+.library-modal .modal-header{padding:20px 22px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.library-toolbar{display:flex;gap:9px;align-items:center;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.018)}
+.library-search{display:flex;align-items:center;gap:8px;flex:1;min-width:180px;background:#0b0d10;border:1px solid rgba(255,255,255,.1);border-radius:9px;padding:0 11px}.library-search span{font-size:1.15rem;color:var(--accent)}.library-search input{width:100%;border:0!important;background:transparent!important;outline:0!important;padding:10px 2px!important}
+.token-library-showcase,.map-library-grid{padding:18px;overflow:auto;max-height:calc(92vh - 185px)}
+.token-library-showcase{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px}
+.token-showcase-card{padding:0;overflow:hidden;background:linear-gradient(160deg,rgba(28,30,36,.95),rgba(12,13,17,.98));transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.token-showcase-card:hover{transform:translateY(-3px);border-color:rgba(235,210,145,.45);box-shadow:0 12px 28px rgba(0,0,0,.35)}
+.token-showcase-preview{height:185px;position:relative;display:grid;place-items:center;background:radial-gradient(circle,rgba(70,72,78,.3),rgba(5,6,8,.95) 70%);border-bottom:1px solid rgba(255,255,255,.07)}
+.token-showcase-ring{width:124px;height:124px;border-radius:50%;display:grid;place-items:center;overflow:hidden;border:2px solid rgba(235,210,145,.55);box-shadow:0 0 0 7px rgba(235,210,145,.035),0 12px 30px rgba(0,0,0,.65);background:#171a1f}.token-showcase-ring img{width:100%;height:100%;object-fit:cover}.token-showcase-ring span{font-size:3rem;font-weight:800;color:#eee}.token-type-badge{position:absolute;top:10px;right:10px;padding:4px 7px;border-radius:5px;background:rgba(5,6,8,.78);border:1px solid rgba(235,210,145,.2);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent)}
+.token-showcase-info{display:grid;gap:3px;padding:12px 13px}.token-showcase-actions{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;padding:0 12px 12px}.token-showcase-actions button{min-width:0;padding:7px 8px;font-size:.78rem}
+.map-library-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}.map-lib-card{overflow:hidden;border:1px solid var(--border);border-radius:12px;background:rgba(20,22,27,.9);transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}.map-lib-card:hover,.map-lib-card.is-active{transform:translateY(-2px);border-color:rgba(235,210,145,.38);box-shadow:0 14px 35px rgba(0,0,0,.35)}.map-lib-preview{display:block;width:100%;height:155px;padding:0;border:0;border-bottom:1px solid rgba(255,255,255,.08);position:relative;overflow:hidden;background:#050607;cursor:pointer}.map-lib-preview img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .25s ease,filter .25s ease}.map-lib-preview:hover img{transform:scale(1.035);filter:brightness(1.08)}.map-lib-overlay{position:absolute;inset:auto 9px 9px auto;padding:5px 7px;border-radius:5px;background:rgba(4,5,7,.8);border:1px solid rgba(235,210,145,.22);font-size:.65rem;letter-spacing:.09em;color:var(--accent)}.map-lib-info{padding:11px 12px 6px;display:grid;gap:5px}.map-lib-meta{display:flex;gap:12px;color:var(--muted);font-size:.72rem}.map-lib-actions{display:grid;grid-template-columns:1fr 1fr auto;gap:6px;padding:7px 12px 12px}.map-lib-actions button{padding:7px 8px;font-size:.78rem}.library-empty{grid-column:1/-1;min-height:230px;display:grid;place-items:center;text-align:center}
+.dead-skull-inline{width:75%;height:75%;display:block;color:inherit;fill:currentColor;overflow:visible}
+.map-token .token-dead-skull .dead-skull-inline,.player-map-token .token-dead-skull .dead-skull-inline{width:75%!important;height:75%!important;display:block!important}
+@media(max-width:700px){.library-toolbar{flex-wrap:wrap}.library-search{flex-basis:100%}.token-library-showcase,.map-library-grid{padding:12px;max-height:calc(92vh - 205px)}.token-library-showcase{grid-template-columns:repeat(2,minmax(0,1fr))}.map-library-grid{grid-template-columns:1fr}.token-showcase-preview{height:145px}.token-showcase-ring{width:92px;height:92px}}
+@media(max-width:430px){.token-library-showcase{grid-template-columns:1fr}}
+
+
+/* Refined Combat Tracker extension */
+.initiative-panel .initiative-panel-list{gap:7px!important;}
+.initiative-panel .initiative-panel-item{grid-template-columns:26px minmax(0,1fr)!important;gap:8px!important;padding:8px!important;border-radius:9px!important;transition:background .16s ease,border-color .16s ease,transform .16s ease,box-shadow .16s ease;}
+.initiative-panel .initiative-panel-item:hover{transform:translateY(-1px);border-color:rgba(232,197,102,.28);}
+.initiative-panel .initiative-panel-item.current{box-shadow:inset 3px 0 0 var(--accent),0 5px 16px rgba(0,0,0,.22)!important;}
+.initiative-panel .initiative-panel-index{width:26px!important;height:26px!important;font-size:.66rem!important;align-self:start;margin-top:1px;}
+.tracker-name-row{display:flex;align-items:center;gap:8px;min-width:0;}
+/* Combat Tracker Extension: token portrait stays responsive but deliberately compact.
+   It scales with the available UI while remaining large enough to identify the combatant. */
+.tracker-token-mini{width:clamp(36px,4vw,46px);height:clamp(36px,4vw,46px);flex:0 0 clamp(36px,4vw,46px);border-radius:7px;overflow:hidden;display:grid;place-items:center;background:linear-gradient(145deg,#252a31,#111318);border:1px solid rgba(232,197,102,.38);box-shadow:0 2px 8px rgba(0,0,0,.35);}
+.tracker-token-mini img{width:100%;height:100%;object-fit:cover;display:block;}
+.tracker-token-mini span{font-family:var(--font-display);font-size:.78rem;color:var(--accent-bright);}
+.tracker-token-mini.is-dead{border-color:rgba(190,54,45,.72);filter:saturate(.8);}
+.tracker-name-stack{min-width:0;display:grid;gap:2px;}
+.tracker-name-stack strong{font-size:.78rem;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.initiative-panel .initiative-value{font-size:.61rem!important;line-height:1.1;}
+/* Combat Tracker Extension: Shock is a live resource bar. Keep it visually compact, but give
+   the GM explicit +/- controls. The current value is allowed to exceed the normal maximum,
+   so the fill caps at 100% while the numeric readout remains authoritative. */
+.initiative-panel .tracker-resource-bar{display:grid;grid-template-columns:26px minmax(0,1fr) 26px;gap:5px;align-items:center;margin-top:6px;min-width:0;}
+.initiative-panel .tracker-resource-track{position:relative;min-width:0;height:24px;border:1px solid rgba(255,255,255,.09);border-radius:7px;background:rgba(0,0,0,.28);overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.initiative-panel .tracker-resource-fill{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(90deg,rgba(111,151,188,.38),rgba(167,116,174,.5));transition:width .18s ease;}
+.initiative-panel .tracker-resource-track span{position:relative;z-index:1;font-size:.61rem;font-weight:700;color:var(--text);text-shadow:0 1px 2px #000;white-space:nowrap;}
+.initiative-panel .tracker-resource-track small{font-size:.56rem;color:var(--muted);font-weight:600;}
+.initiative-panel .tracker-resource-btn{width:26px!important;height:24px!important;min-width:26px!important;padding:0!important;border:1px solid rgba(255,255,255,.09)!important;border-radius:6px!important;background:rgba(255,255,255,.035)!important;color:var(--text)!important;font-weight:800!important;cursor:pointer;display:grid!important;place-items:center!important;transition:transform .14s ease,background .14s ease,border-color .14s ease;}
+.initiative-panel .tracker-resource-btn:hover{background:rgba(232,197,102,.12)!important;border-color:rgba(232,197,102,.38)!important;color:var(--accent-bright)!important;}
+.initiative-panel .tracker-resource-btn:active{transform:scale(.94);}
+.tracker-actions{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:5px;align-items:center;margin-top:7px;}
+.tracker-wounds{display:flex;align-items:center;justify-content:space-between;min-width:0;height:26px;border:1px solid rgba(255,255,255,.08);border-radius:7px;background:rgba(0,0,0,.22);overflow:hidden;}
+.tracker-wounds span{font-size:.61rem;color:var(--muted);padding:0 5px;white-space:nowrap;}
+.tracker-wounds b{color:var(--text);font-weight:700;}
+.initiative-panel .tracker-wound-btn,.initiative-panel .tracker-dead-btn,.initiative-panel .tracker-remove-btn{height:26px!important;min-width:26px!important;padding:0 7px!important;border-radius:6px!important;border:1px solid rgba(255,255,255,.09)!important;background:rgba(255,255,255,.035)!important;color:var(--text)!important;font-size:.63rem!important;font-weight:700!important;display:inline-grid!important;place-items:center!important;cursor:pointer;transition:transform .14s ease,background .14s ease,border-color .14s ease,color .14s ease,box-shadow .14s ease;}
+.initiative-panel .tracker-wound-btn:hover{background:rgba(232,197,102,.12)!important;border-color:rgba(232,197,102,.38)!important;color:var(--accent-bright)!important;}
+.initiative-panel .tracker-wound-btn:active,.initiative-panel .tracker-dead-btn:active,.initiative-panel .tracker-remove-btn:active{transform:scale(.94);}
+.initiative-panel .tracker-wound-btn.minus{color:#d6b2ae!important;}
+.initiative-panel .tracker-wound-btn.plus{color:#cfe0c5!important;}
+.initiative-panel .tracker-dead-btn{min-width:47px!important;}
+.initiative-panel .tracker-dead-btn.is-dead{background:rgba(80,174,112,.12)!important;border-color:rgba(80,174,112,.34)!important;color:#a9dfb7!important;}
+.initiative-panel .tracker-dead-btn:not(.is-dead){color:#d7aaa6!important;}
+.initiative-panel .tracker-remove-btn{width:26px!important;color:#cf7770!important;}
+.initiative-panel .tracker-remove-btn:hover{background:rgba(180,54,45,.15)!important;border-color:rgba(180,54,45,.38)!important;color:#ffaaa2!important;}
+@media(max-width:750px){.tracker-token-mini{width:36px;height:36px;flex-basis:36px}.tracker-actions{grid-template-columns:minmax(0,1fr) auto auto}.initiative-panel .tracker-dead-btn{min-width:44px!important;}}
+
+/* Combat Tracker Extension: always-visible defensive snapshot. Keep this compact so the
+   GM can read Defense, Resilience, and Shock without opening the full combat sheet. */
+.tracker-stat-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin-top:6px;}
+.tracker-stat{min-width:0;display:flex;align-items:center;justify-content:space-between;gap:5px;padding:4px 6px;border:1px solid rgba(255,255,255,.07);border-radius:6px;background:rgba(0,0,0,.2);}
+.tracker-stat span{font-size:.55rem;font-weight:800;letter-spacing:.06em;color:var(--muted);}
+.tracker-stat b{font-size:.72rem;line-height:1;color:var(--text);}
+@media(max-width:420px){.tracker-stat{padding:4px 5px}.tracker-stat span{font-size:.5rem}.tracker-stat b{font-size:.68rem}.tracker-stat-strip{gap:4px;}}
+
+/* Combat Tracker Extension: compact controls that remain usable when the floating
+   panel is resized. Token previews are intentionally larger than the old 24-32px
+   range, but capped so they never consume the combatant row. */
+.initiative-panel .tracker-token-mini{
+  width:clamp(36px,4.5vw,48px)!important;
+  height:clamp(36px,4.5vw,48px)!important;
+  flex-basis:clamp(36px,4.5vw,48px)!important;
+}
+.initiative-panel .tracker-actions{grid-template-columns:minmax(0,1fr) auto auto auto!important;}
+.initiative-panel .tracker-edit-btn{height:26px!important;min-width:38px!important;padding:0 7px!important;border-radius:6px!important;border:1px solid rgba(255,255,255,.09)!important;background:rgba(255,255,255,.035)!important;color:var(--text)!important;font-size:.62rem!important;font-weight:700!important;cursor:pointer;transition:transform .14s ease,background .14s ease,border-color .14s ease;}
+.initiative-panel .tracker-edit-btn:hover{background:rgba(232,197,102,.12)!important;border-color:rgba(232,197,102,.38)!important;transform:translateY(-1px);}
+.initiative-panel .tracker-header-action{min-width:48px!important;font-size:.62rem!important;padding:5px 6px!important;}
+@media(max-width:750px){.initiative-panel .tracker-token-mini{width:38px!important;height:38px!important;flex-basis:38px!important;}.initiative-panel .tracker-actions{grid-template-columns:minmax(0,1fr) auto auto auto!important;gap:4px!important;}.initiative-panel .tracker-edit-btn{min-width:36px!important;padding:0 5px!important;}}
+@media(max-width:420px){.initiative-panel .tracker-actions{grid-template-columns:minmax(0,1fr) repeat(3,auto)!important;}.initiative-panel .tracker-edit-btn{font-size:.58rem!important;min-width:34px!important;}}
+.pan-gesture-tool{opacity:.9;}
+
+/* Resource bars in the Combat Tracker Extension: Wounds intentionally mirrors Shock.
+   Keep the two bars stacked so both resources remain readable at narrow floating-panel widths. */
+.initiative-panel .wounds-resource{margin-top:6px!important;}
+.initiative-panel .wounds-resource .tracker-resource-fill{background:linear-gradient(90deg,rgba(177,91,78,.40),rgba(213,125,83,.52));}
+.initiative-panel .shock-resource .tracker-resource-fill{background:linear-gradient(90deg,rgba(111,151,188,.38),rgba(167,116,174,.50));}
+.initiative-panel .tracker-actions-secondary{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:5px!important;margin-top:7px!important;}
+.initiative-panel .tracker-actions-secondary .tracker-edit-btn,.initiative-panel .tracker-actions-secondary .tracker-dead-btn,.initiative-panel .tracker-actions-secondary .tracker-shocked-btn,.initiative-panel .tracker-actions-secondary .tracker-remove-btn{width:100%!important;min-width:0!important;}
+@media(max-width:420px){.initiative-panel .tracker-actions-secondary{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:4px!important;}}
+
+/* VTT interaction refinement: keep every resize handle inside the panel's clipped
+   bounds so all eight directions remain hit-testable. Negative offsets were being
+   clipped by overflow:auto, which made the left edge appear to be the only usable side. */
+body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.edge-left,
+body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.edge-left{left:0!important;}
+body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.edge-right,
+body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.edge-right{right:0!important;}
+body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.edge-top,
+body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.edge-top{top:0!important;}
+body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.edge-bottom,
+body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.edge-bottom{bottom:0!important;}
+body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.corner-nw,
+body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.corner-nw{left:0!important;top:0!important;}
+body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.corner-ne,
+body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.corner-ne{right:0!important;top:0!important;}
+body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.corner-sw,
+body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.corner-sw{left:0!important;bottom:0!important;}
+body.map-page #map-vtt > .map-toolbar > .panel-resize-handle.corner-se,
+body.map-page #map-vtt > .initiative-panel > .panel-resize-handle.corner-se{right:0!important;bottom:0!important;}
+
+/* Draw color is intentionally revealed only while Draw is the selected map tool. */
+.draw-color-control{display:grid;gap:6px;}
+.draw-color-picker-row{display:grid;grid-template-columns:42px 1fr;align-items:center;gap:8px;}
+.draw-color-picker-row input[type="color"]{width:42px;height:30px;padding:2px;border:1px solid var(--border);border-radius:7px;background:#111;cursor:pointer;}
+.draw-color-picker-row output{font:600 .75rem ui-monospace,SFMono-Regular,Consolas,monospace;color:var(--muted);}
+.map-tool[data-tool="pan"].active{box-shadow:inset 0 0 0 1px rgba(235,210,145,.8);}
+
+/* FINAL RESIZE-HITBOX FIX
+   Each resize handle belongs to the panel's own border box. Do not use one generic
+   bottom/left/right rule for all handles: that makes every hit zone overlap at one edge.
+   Keep these hit zones inside the panel so overflow:auto cannot clip them. */
+.map-workspace > .map-toolbar > .panel-resize-handle,
+.map-workspace > .initiative-panel > .panel-resize-handle,
+.map-workspace > .map-viewer-window > .panel-resize-handle {
+  position:absolute !important;
+  z-index:100 !important;
+  display:block !important;
+  margin:0 !important;
+  padding:0 !important;
+  box-sizing:border-box !important;
+  background:transparent !important;
+  border:0 !important;
+  opacity:0 !important;
+  pointer-events:auto !important;
+  touch-action:none !important;
+}
+.map-workspace > .map-toolbar > .panel-resize-handle:hover,
+.map-workspace > .initiative-panel > .panel-resize-handle:hover,
+.map-workspace > .map-viewer-window > .panel-resize-handle:hover,
+.map-workspace > .map-toolbar.is-resizing > .panel-resize-handle,
+.map-workspace > .initiative-panel.is-resizing > .panel-resize-handle,
+.map-workspace > .map-viewer-window.is-resizing > .panel-resize-handle {
+  opacity:1 !important;
+  background:rgba(235,210,145,.22) !important;
+}
+/* Edge hit areas are deliberately narrow and distinct. */
+.map-workspace > .map-toolbar > .panel-resize-handle.edge-left,
+.map-workspace > .initiative-panel > .panel-resize-handle.edge-left,
+.map-workspace > .map-viewer-window > .panel-resize-handle.edge-left {
+  left:0 !important; top:8px !important; bottom:8px !important; width:10px !important; cursor:ew-resize !important;
+}
+.map-workspace > .map-toolbar > .panel-resize-handle.edge-right,
+.map-workspace > .initiative-panel > .panel-resize-handle.edge-right,
+.map-workspace > .map-viewer-window > .panel-resize-handle.edge-right {
+  right:0 !important; top:8px !important; bottom:8px !important; width:10px !important; cursor:ew-resize !important;
+}
+.map-workspace > .map-toolbar > .panel-resize-handle.edge-top,
+.map-workspace > .initiative-panel > .panel-resize-handle.edge-top,
+.map-workspace > .map-viewer-window > .panel-resize-handle.edge-top {
+  top:0 !important; left:8px !important; right:8px !important; height:10px !important; cursor:ns-resize !important;
+}
+.map-workspace > .map-toolbar > .panel-resize-handle.edge-bottom,
+.map-workspace > .initiative-panel > .panel-resize-handle.edge-bottom,
+.map-workspace > .map-viewer-window > .panel-resize-handle.edge-bottom {
+  bottom:0 !important; left:8px !important; right:8px !important; height:10px !important; cursor:ns-resize !important;
+}
+/* Corner hit areas sit above edge hit areas so diagonal resizing is unambiguous. */
+.map-workspace > .map-toolbar > .panel-resize-handle.corner-nw,
+.map-workspace > .initiative-panel > .panel-resize-handle.corner-nw,
+.map-workspace > .map-viewer-window > .panel-resize-handle.corner-nw,
+.map-workspace > .map-toolbar > .panel-resize-handle.corner-ne,
+.map-workspace > .initiative-panel > .panel-resize-handle.corner-ne,
+.map-workspace > .map-viewer-window > .panel-resize-handle.corner-ne,
+.map-workspace > .map-toolbar > .panel-resize-handle.corner-sw,
+.map-workspace > .initiative-panel > .panel-resize-handle.corner-sw,
+.map-workspace > .map-viewer-window > .panel-resize-handle.corner-sw,
+.map-workspace > .map-toolbar > .panel-resize-handle.corner-se,
+.map-workspace > .initiative-panel > .panel-resize-handle.corner-se,
+.map-workspace > .map-viewer-window > .panel-resize-handle.corner-se {
+  width:14px !important; height:14px !important; z-index:110 !important;
+}
+.map-workspace > .map-toolbar > .panel-resize-handle.corner-nw,
+.map-workspace > .initiative-panel > .panel-resize-handle.corner-nw,
+.map-workspace > .map-viewer-window > .panel-resize-handle.corner-nw { left:0 !important; top:0 !important; cursor:nwse-resize !important; }
+.map-workspace > .map-toolbar > .panel-resize-handle.corner-ne,
+.map-workspace > .initiative-panel > .panel-resize-handle.corner-ne,
+.map-workspace > .map-viewer-window > .panel-resize-handle.corner-ne { right:0 !important; top:0 !important; cursor:nesw-resize !important; }
+.map-workspace > .map-toolbar > .panel-resize-handle.corner-sw,
+.map-workspace > .initiative-panel > .panel-resize-handle.corner-sw,
+.map-workspace > .map-viewer-window > .panel-resize-handle.corner-sw { left:0 !important; bottom:0 !important; cursor:nesw-resize !important; }
+.map-workspace > .map-toolbar > .panel-resize-handle.corner-se,
+.map-workspace > .initiative-panel > .panel-resize-handle.corner-se,
+.map-workspace > .map-viewer-window > .panel-resize-handle.corner-se { right:0 !important; bottom:0 !important; cursor:nwse-resize !important; }
+
+/* RESIZE GRIP VISIBILITY FIX
+   These handles are intentional grab zones. Keep them visible enough to discover
+   and grab, while using a restrained border-glow instead of a large opaque bar.
+   Their hitboxes and resize directions remain unchanged. */
+.map-workspace > .map-toolbar > .panel-resize-handle,
+.map-workspace > .initiative-panel > .panel-resize-handle,
+.map-workspace > .map-viewer-window > .panel-resize-handle {
+  opacity:.28 !important;
+  background:rgba(235,210,145,.18) !important;
+  border:1px solid rgba(235,210,145,.22) !important;
+  box-shadow:none !important;
+}
+.map-workspace > .map-toolbar > .panel-resize-handle:hover,
+.map-workspace > .initiative-panel > .panel-resize-handle:hover,
+.map-workspace > .map-viewer-window > .panel-resize-handle:hover,
+.map-workspace > .map-toolbar.is-resizing > .panel-resize-handle,
+.map-workspace > .initiative-panel.is-resizing > .panel-resize-handle,
+.map-workspace > .map-viewer-window.is-resizing > .panel-resize-handle {
+  opacity:.82 !important;
+  background:rgba(235,210,145,.34) !important;
+  border-color:rgba(235,210,145,.70) !important;
+  box-shadow:0 0 6px rgba(235,210,145,.24) !important;
+}
+
+/* FINAL VTT RESIZE GRIP VISIBILITY OVERRIDE
+   Resize handles remain interactive, but the hitboxes themselves must not paint
+   translucent bars over the panel edges. The browser cursor is the affordance. */
+.map-workspace > .map-toolbar > .panel-resize-handle,
+.map-workspace > .initiative-panel > .panel-resize-handle,
+.map-workspace > .map-viewer-window > .panel-resize-handle,
+.map-workspace > .map-toolbar > .panel-resize-handle:hover,
+.map-workspace > .initiative-panel > .panel-resize-handle:hover,
+.map-workspace > .map-viewer-window > .panel-resize-handle:hover,
+.map-workspace > .map-toolbar.is-resizing > .panel-resize-handle,
+.map-workspace > .initiative-panel.is-resizing > .panel-resize-handle,
+.map-workspace > .map-viewer-window.is-resizing > .panel-resize-handle {
+  background:transparent !important;
+  background-image:none !important;
+  border:0 !important;
+  box-shadow:none !important;
+  opacity:0 !important;
+  outline:0 !important;
+}
+
+/* Player Map refresh animation system */
+.player-map-fog-transition{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  z-index:4!important;
+  pointer-events:none!important;
+  opacity:1;
+}
+.player-map-fog-transition.is-animating{
+  animation:playerMapFogCrossfade .75s ease-out forwards;
+}
+@keyframes playerMapFogCrossfade{from{opacity:1}to{opacity:0}}
+
+.player-map-token{
+  transition:left .65s cubic-bezier(.22,.8,.28,1),top .65s cubic-bezier(.22,.8,.28,1),opacity .45s ease,filter .45s ease;
+}
+.player-map-token.player-map-token-enter,
+.player-map-token.player-map-token-reveal{
+  animation:playerMapTokenEnter .55s cubic-bezier(.2,.8,.25,1) both;
+}
+.player-map-token.player-map-token-move{
+  will-change:left,top;
+}
+@keyframes playerMapTokenEnter{
+  from{opacity:0;transform:scale(.72);filter:blur(2px)}
+  to{opacity:1;transform:scale(1);filter:blur(0)}
+}
+.player-map-token.player-map-death-transition .token-dead-red{
+  animation:playerMapDeathRed .8s ease-out both;
+}
+.player-map-token.player-map-death-transition .token-dead-skull{
+  animation:playerMapDeathSkull .8s cubic-bezier(.2,.85,.25,1) both;
+  transform-origin:50% 50%;
+}
+@keyframes playerMapDeathRed{
+  from{opacity:0}
+  to{opacity:1}
+}
+@keyframes playerMapDeathSkull{
+  from{opacity:0;transform:translate(-50%,-50%) scale(.35) rotate(-8deg)}
+  65%{opacity:1;transform:translate(-50%,-50%) scale(1.08) rotate(2deg)}
+  to{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}
+}
+
+/* ================================================================
+   PLAYER MAP UPDATE ANIMATION / RECEIVING PHASE
+   The Player Map must not jump to the destination state. A refresh is:
+   1) receive the complete snapshot,
+   2) keep the old scene visible briefly,
+   3) render the new state underneath,
+   4) fade/move the old state into the new state slowly.
+   ================================================================ */
+#player-map-update-badge{
+  position:absolute!important;
+  top:14px!important;
+  left:50%!important;
+  transform:translateX(-50%) translateY(-8px)!important;
+  z-index:100!important;
+  padding:7px 12px!important;
+  border:1px solid rgba(235,210,145,.55)!important;
+  border-radius:7px!important;
+  background:rgba(8,9,12,.88)!important;
+  color:#ebd291!important;
+  font:700 11px system-ui,sans-serif!important;
+  letter-spacing:.08em!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  transition:opacity .18s ease,transform .18s ease!important;
+}
+#player-map-update-badge.is-visible{
+  opacity:1!important;
+  transform:translateX(-50%) translateY(0)!important;
+}
+.player-map-stage.player-map-receiving::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:90;
+  pointer-events:none;
+  background:rgba(0,0,0,.06);
+}
+.player-map-draw-transition{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  z-index:3!important;
+  pointer-events:none!important;
+  opacity:1;
+}
+.player-map-draw-transition.is-animating{
+  animation:playerMapDrawCrossfade 2.2s ease-in-out forwards;
+}
+@keyframes playerMapDrawCrossfade{from{opacity:1}to{opacity:0}}
+.player-map-fog-transition{
+  z-index:4!important;
+}
+.player-map-fog-transition.is-animating{
+  animation:playerMapFogCrossfade 2.8s cubic-bezier(.2,.75,.2,1) forwards!important;
+}
+@keyframes playerMapFogCrossfade{from{opacity:1}to{opacity:0}}
+.player-map-token{
+  transition:left 2.35s cubic-bezier(.16,.72,.18,1),
+             top 2.35s cubic-bezier(.16,.72,.18,1),
+             opacity .9s ease,
+             filter .9s ease!important;
+}
+.player-map-token.player-map-token-move{
+  will-change:left,top;
+}
+.player-map-token.player-map-token-exit{
+  transition:left 2.35s cubic-bezier(.16,.72,.18,1),
+             top 2.35s cubic-bezier(.16,.72,.18,1),
+             opacity 1.2s ease,
+             filter 1.2s ease!important;
+}
+.player-map-token.player-map-token-exit.is-exiting{
+  opacity:0!important;
+  filter:blur(2px)!important;
+}
+.player-map-token.player-map-token-enter,
+.player-map-token.player-map-token-reveal{
+  animation:playerMapTokenEnter 1.35s cubic-bezier(.16,.78,.2,1) both!important;
+}
+@keyframes playerMapTokenEnter{
+  from{opacity:0;transform:scale(.72);filter:blur(2px)}
+  to{opacity:1;transform:scale(1);filter:blur(0)}
+}
+.player-map-token.player-map-death-transition .token-dead-red{
+  animation:playerMapDeathRed 1.9s ease-out both!important;
+}
+.player-map-token.player-map-death-transition .token-dead-skull{
+  animation:playerMapDeathSkull 1.9s cubic-bezier(.16,.8,.2,1) both!important;
+  transform-origin:50% 50%;
+}
+@keyframes playerMapDeathRed{
+  0%{opacity:0}
+  100%{opacity:1}
+}
+@keyframes playerMapDeathSkull{
+  0%{opacity:0;transform:scale(.3) rotate(-10deg)}
+  68%{opacity:1;transform:scale(1.08) rotate(2deg)}
+  100%{opacity:1;transform:scale(1) rotate(0)}
+}
+
+/* Tokens crossing from revealed space into fog are part of the same staged
+   transition as their movement. They travel first while gradually fading,
+   then become fully hidden. This is intentionally CSS-only so it cannot
+   interfere with the Player Map refresh lifecycle. */
+.player-map-token.player-map-token-fog-exit{
+  transition:left 2.35s cubic-bezier(.16,.72,.18,1),
+             top 2.35s cubic-bezier(.16,.72,.18,1),
+             opacity 2.35s cubic-bezier(.22,.7,.25,1),
+             filter 2.35s ease!important;
+}
+.player-map-token.player-map-token-fog-exit.is-fog-hidden{
+  opacity:0!important;
+  filter:blur(2.5px)!important;
+}
+
+/* PLAYER MAP REFRESH STABILITY */
+#player-map-update-badge{display:block!important;pointer-events:none!important;z-index:1000!important;}
+.player-map-stage.player-map-receiving{overflow:visible!important;}
+/* Visibility tools remain selected between actions. Their pointer state must still never leave the GM map trapped. */
+.map-workspace .map-tool[data-tool="show"].active,
+.map-workspace .map-tool[data-tool="fog"].active,
+.map-workspace .map-tool[data-tool="hide"].active{outline-color:rgba(235,210,145,.85)!important;}
+
+
+/* SLOW PLAYER MAP CINEMATIC TRANSITIONS */
+.player-map-fog-transition.is-animating{animation-duration:4.6s!important;}
+.player-map-draw-transition.is-animating{animation-duration:3.6s!important;}
+.player-map-token{transition:left 3.6s cubic-bezier(.16,.72,.18,1),top 3.6s cubic-bezier(.16,.72,.18,1),opacity 1.8s ease,filter 1.8s ease!important;}
+.player-map-token.player-map-token-exit,.player-map-token.player-map-token-fog-exit{transition:left 3.6s cubic-bezier(.16,.72,.18,1),top 3.6s cubic-bezier(.16,.72,.18,1),opacity 3.6s cubic-bezier(.22,.7,.25,1),filter 3.6s ease!important;}
+.player-map-token.player-map-token-enter,.player-map-token.player-map-token-reveal{animation-duration:1.6s!important;}
+/* Cinematic timing: a revealed hidden token appears 2s after the 4.6s fog-lift completes.
+   Death/revive effects wait 2s after the refresh has rendered, then play slowly.
+   Inline timing is used for reveal because the fog duration may be changed independently. */
+.player-map-token.player-map-reveal{animation-delay:6.6s!important;}
+.player-map-token.player-map-death-transition .token-dead-red,.player-map-token.player-map-death-transition .token-dead-skull{animation-duration:4.2s!important;animation-delay:2s!important;}
+.player-map-token.player-map-revive-transition .token-dead-red{animation:playerMapReviveRed 4.2s ease-in-out 2s both!important;}
+.player-map-token.player-map-revive-transition .token-dead-skull{animation:playerMapReviveSkull 4.2s ease-in-out 2s both!important;}
+@keyframes playerMapReviveRed{0%{opacity:1}100%{opacity:0}}
+@keyframes playerMapReviveSkull{0%{opacity:1;transform:scale(1) rotate(0)}45%{opacity:1;transform:scale(1.05) rotate(-2deg)}100%{opacity:0;transform:scale(.35) rotate(10deg)}}
+
+/* FINAL PLAYER-MAP CINEMATIC STATE FIX
+   Death and revive are one visual event: the red wash and skull are wrapped in
+   one state container and appear/disappear together. The 2s delay starts after
+   the refreshed Player Map scene has finished initializing. */
+.player-map-token .token-dead-red,
+.player-map-token .token-dead-skull{
+  animation:none!important;
+}
+.player-map-token .token-death-state{
+  position:absolute!important;
+  inset:0!important;
+  z-index:30!important;
+  opacity:1;
+  transform:none!important;
+  pointer-events:none!important;
+}
+.player-map-token .token-death-state .token-dead-red{
+  animation:none!important;
+}
+.player-map-token .token-death-state .token-dead-skull{
+  animation:none!important;
+}
+.player-map-token .token-death-state.is-pending{
+  opacity:0!important;
+}
+.player-map-token .token-death-state:not(.is-pending){
+  opacity:1!important;
+}
+.player-map-token .token-death-state.player-map-revive-state.is-pending{
+  opacity:1!important;
+}
+.player-map-token .token-death-state.player-map-revive-state:not(.is-pending){
+  animation:playerMapDeathStateFadeOut 4.2s ease-in-out both!important;
+}
+.player-map-token .token-death-state.player-map-death-state:not(.is-pending){
+  animation:playerMapDeathStateFadeIn 4.2s ease-in-out both!important;
+}
+@keyframes playerMapDeathStateFadeIn{
+  0%{opacity:0;transform:scale(.97)}
+  100%{opacity:1;transform:scale(1)}
+}
+@keyframes playerMapDeathStateFadeOut{
+  0%{opacity:1;transform:scale(1)}
+  100%{opacity:0;transform:scale(.97)}
+}
+
+/* A hidden token revealed by Show remains completely invisible during the fog
+   transition, then waits two additional seconds before materializing. */
+.player-map-token.player-map-token-reveal{
+  animation-delay:6.6s!important;
+  animation-duration:1.6s!important;
+}
+
+/* ==========================================================================\n   FINAL CINEMATIC TIMING + GOTHIC GLASS UX\n   ========================================================================== */
+.player-map-fog-transition.is-animating{animation-duration:5.5s!important;animation-timing-function:cubic-bezier(.16,.72,.18,1)!important;}
+.player-map-draw-transition.is-animating{animation-duration:4.2s!important;animation-timing-function:cubic-bezier(.16,.72,.18,1)!important;}
+.player-map-token{transition:left 4s cubic-bezier(.16,.72,.18,1),top 4s cubic-bezier(.16,.72,.18,1),opacity 2.4s ease,filter 2.4s ease!important;will-change:transform,opacity;}
+.player-map-token.player-map-token-exit,.player-map-token.player-map-token-fog-exit{transition:left 4s cubic-bezier(.16,.72,.18,1),top 4s cubic-bezier(.16,.72,.18,1),opacity 4s cubic-bezier(.22,.7,.25,1),filter 4s ease!important;}
+.player-map-token.player-map-token-enter{animation-duration:2.4s!important;}
+
+/* Death/revive are deliberately controlled as one composite overlay by JS. */
+.player-map-token .token-death-state{animation:none!important;transition:none!important;}
+.player-map-token .token-death-state .token-dead-red,
+.player-map-token .token-death-state .token-dead-skull{animation:none!important;transition:none!important;}
+
+/* --------------------------------------------------------------------------\n   Refined Gothic Glass UI\n   -------------------------------------------------------------------------- */
+:root{
+  --glass-bg:rgba(17,14,13,.72);
+  --glass-bg-strong:rgba(11,9,9,.84);
+  --glass-border:rgba(210,181,112,.24);
+  --glass-border-hot:rgba(232,197,102,.48);
+  --glass-shadow:0 18px 50px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,236,188,.055);
+  --glass-blur:14px;
+}
+
+body{letter-spacing:.01em;}
+#main-navigation,
+.card,
+.modal-card,
+.map-toolbar,
+.initiative-panel,
+.map-viewer-window,
+.workspace-panel-body,
+.player-map-toolbar,
+.player-map-label,
+.tool-group,
+.dashboard-toolbar,
+.dashboard-tabs,
+.section-header{
+  background:linear-gradient(145deg,rgba(31,25,22,.78),rgba(9,8,8,.72))!important;
+  border-color:var(--glass-border)!important;
+  box-shadow:var(--glass-shadow)!important;
+  backdrop-filter:blur(var(--glass-blur)) saturate(115%);
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(115%);
+}
+
+.card,.modal-card,.map-toolbar,.initiative-panel,.map-viewer-window,.tool-group{
+  border-radius:8px;
+  position:relative;
+  overflow:hidden;
+}
+.card::before,.modal-card::before,.map-toolbar::before,.initiative-panel::before,.map-viewer-window::before,.tool-group::before{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(120deg,rgba(255,226,160,.045),transparent 34%,transparent 72%,rgba(116,20,20,.045));
+}
+
+button,input,select,textarea{
+  transition:background .22s ease,border-color .22s ease,box-shadow .22s ease,color .22s ease,transform .16s ease,filter .22s ease;
+}
+button{border-radius:5px;}
+button:hover{transform:translateY(-1px);}
+button:active{transform:translateY(0);}
+input,select,textarea{
+  background:rgba(5,5,6,.62)!important;
+  border-color:rgba(210,181,112,.22)!important;
+  border-radius:5px!important;
+  box-shadow:inset 0 1px 8px rgba(0,0,0,.28)!important;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:var(--glass-border-hot)!important;
+  box-shadow:0 0 0 2px rgba(232,197,102,.08),0 0 20px rgba(194,154,67,.10),inset 0 1px 8px rgba(0,0,0,.28)!important;
+  outline:none;
+}
+
+.nav-button,.dashboard-tab{transition:color .22s ease,background .22s ease,border-color .22s ease,transform .18s ease;}
+.nav-button:hover,.dashboard-tab:hover{transform:translateY(-1px);}
+.badge,.tag-chip{border-radius:999px!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.045),0 4px 14px rgba(0,0,0,.18);}
+
+.map-workspace{background:radial-gradient(circle at 50% 35%,rgba(126,91,40,.055),transparent 48%),rgba(4,4,5,.86)!important;}
+.map-toolbar,.initiative-panel,.map-viewer-window{box-shadow:0 22px 55px rgba(0,0,0,.52),inset 0 1px 0 rgba(255,236,188,.07)!important;}
+.workspace-chrome{background:linear-gradient(180deg,rgba(43,34,26,.86),rgba(15,12,11,.72));border-bottom:1px solid rgba(210,181,112,.18);}
+
+/* Subtle motion for the interface itself, without making controls sluggish. */
+.card,.tool-group,.modal-card{animation:gothicSurfaceIn .35s ease both;}
+@keyframes gothicSurfaceIn{from{opacity:.86;transform:translateY(3px)}to{opacity:1;transform:none}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important;}
+}
+
+/* ============================================================================
+   STRUCTURED PLAYER MAP / VTT INTERACTION LAYER
+   This block belongs to the rewritten controller. It intentionally uses new
+   wg-* class names so legacy animation rules cannot fight the state machine.
+   ============================================================================ */
+.wg-player-shell{
+  min-height:100vh;
+  display:grid;
+  grid-template-rows:auto minmax(0,1fr) auto;
+  gap:10px;
+  padding:12px;
+  box-sizing:border-box;
+  background:
+    radial-gradient(circle at 18% 12%,rgba(127,30,30,.10),transparent 34%),
+    radial-gradient(circle at 86% 78%,rgba(197,157,78,.07),transparent 36%),
+    #08090b;
+}
+.wg-glass-toolbar{
+  position:relative!important;
+  z-index:20!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:14px!important;
+  min-height:52px!important;
+  padding:9px 12px!important;
+  border:1px solid rgba(221,190,119,.25)!important;
+  border-radius:11px!important;
+  background:linear-gradient(180deg,rgba(30,25,24,.82),rgba(11,10,12,.78))!important;
+  box-shadow:0 14px 34px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,238,195,.04)!important;
+  backdrop-filter:blur(16px)!important;
+}
+.wg-player-toolbar-title{display:flex;flex-direction:column;min-width:0;line-height:1.05}
+.wg-player-eyebrow{font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(235,210,145,.72);font-weight:800}
+.wg-player-toolbar-title strong{font-family:Georgia,serif;color:#eee7d7;font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wg-player-toolbar-controls{display:flex;align-items:center;gap:5px;flex:0 0 auto}
+.wg-player-toolbar-controls button{min-width:34px;height:32px!important;padding:0 8px!important;border-radius:7px!important}
+.player-map-stage-wrap{position:relative!important;border:1px solid rgba(221,190,119,.16)!important;border-radius:12px!important;background:rgba(10,10,12,.76)!important;box-shadow:0 18px 48px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.02)!important;}
+.player-map-stage{position:relative!important;overflow:visible!important;isolation:isolate!important;}
+.player-map-image{position:absolute!important;inset:0 auto auto 0!important;z-index:0!important;display:block!important;user-select:none!important;pointer-events:none!important;}
+#player-map-draw{position:absolute!important;inset:0!important;z-index:2!important;pointer-events:none!important;}
+#player-map-draw-transition{position:absolute!important;inset:0!important;z-index:3!important;pointer-events:none!important;opacity:0;will-change:opacity;}
+#player-map-fog{position:absolute!important;inset:0!important;z-index:4!important;pointer-events:none!important;}
+#player-map-fog-transition{position:absolute!important;inset:0!important;z-index:5!important;pointer-events:none!important;opacity:0;will-change:opacity;}
+#player-map-tokens{position:absolute!important;inset:0!important;z-index:8!important;transform-origin:0 0!important;pointer-events:none!important;}
+#player-map-update-badge{position:absolute!important;top:14px!important;left:50%!important;z-index:50!important;pointer-events:none!important;transform:translate(-50%,-7px)!important;padding:8px 13px!important;border:1px solid rgba(235,210,145,.42)!important;border-radius:8px!important;background:rgba(8,8,10,.88)!important;color:#ecd693!important;font:800 10px/1 system-ui,sans-serif!important;letter-spacing:.12em!important;opacity:0!important;visibility:hidden!important;transition:opacity .28s ease,transform .34s ease,visibility 0s linear .34s!important;box-shadow:0 10px 30px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,245,210,.06)!important;}
+#player-map-update-badge.is-visible{opacity:1!important;visibility:visible!important;transform:translate(-50%,0)!important;transition:opacity .28s ease,transform .34s ease,visibility 0s!important;}
+.player-map-stage.wg-player-receiving::after{content:"";position:absolute;inset:0;z-index:40;pointer-events:none;background:radial-gradient(circle at 50% 45%,rgba(235,210,145,.045),transparent 52%),rgba(0,0,0,.055);}
+.wg-player-token-visibility-anchor {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.wg-player-token{position:absolute;display:grid;place-items:center;border-radius:50%;overflow:visible;box-sizing:border-box;border:2px solid rgba(235,210,145,.95);background:#20242a;box-shadow:0 4px 14px rgba(0,0,0,.72);will-change:transform,opacity;transform-origin:50% 50%;pointer-events:none;}
+.wg-player-token-art{position:absolute;inset:0;display:grid;place-items:center;border-radius:inherit;overflow:hidden;background:linear-gradient(145deg,#23272d,#101216);}
+.wg-player-token-art img{display:block;width:100%;height:100%;object-fit:cover}
+.wg-player-token-art span{font:900 clamp(11px,4.2vw,22px)/1 system-ui,sans-serif;color:#f2ecde}
+.wg-player-token-label{position:absolute;left:50%;top:calc(100% + 7px);transform:translateX(-50%);max-width:220%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:3px 7px;border:1px solid rgba(235,210,145,.20);border-radius:6px;background:rgba(7,8,11,.86);box-shadow:0 5px 15px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.03);color:#eee8dc;font:800 clamp(9px,calc(var(--wg-token-size)*.18),15px)/1.15 system-ui,sans-serif;letter-spacing:.015em;text-shadow:0 1px 3px #000;}
+.wg-player-death-composite{position:absolute;inset:0;z-index:20;border-radius:inherit;pointer-events:none;display:grid;place-items:center;transform-origin:50% 50%;}
+.wg-player-death-red{position:absolute;inset:0;border-radius:inherit;background:rgba(156,19,20,.78);}
+.wg-player-death-skull{position:relative;width:72%;height:72%;display:grid;place-items:center;color:#fff;filter:drop-shadow(0 3px 5px rgba(0,0,0,.92));}
+.wg-player-death-skull svg{display:block;width:100%;height:100%}
+.player-map-label{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:10px!important;padding:8px 12px!important;color:#d8d0c0!important;border-top:1px solid rgba(221,190,119,.12)!important;}
+.player-map-label small{font-size:.56rem;letter-spacing:.18em;color:rgba(235,210,145,.56)}
+
+/* One thin, usable resize target. The broad translucent bars from older CSS are
+   suppressed; the edge itself becomes visible only on hover/focus. */
+.map-workspace > .map-toolbar > .panel-resize-handle,
+.map-workspace > .initiative-panel > .panel-resize-handle,
+.map-workspace > .map-viewer-window > .panel-resize-handle{
+  background:transparent!important;
+  background-image:none!important;
+  border:0!important;
+  box-shadow:none!important;
+  opacity:0!important;
+}
+.map-workspace > .map-toolbar > .panel-resize-handle::after,
+.map-workspace > .initiative-panel > .panel-resize-handle::after,
+.map-workspace > .map-viewer-window > .panel-resize-handle::after{content:"";position:absolute;opacity:0;transition:opacity .18s ease;background:rgba(235,210,145,.72);border-radius:999px;pointer-events:none;}
+.map-workspace > .map-toolbar > .panel-resize-handle.edge-left::after,
+.map-workspace > .initiative-panel > .panel-resize-handle.edge-left::after,
+.map-workspace > .map-viewer-window > .panel-resize-handle.edge-left::after,
+.map-workspace > .map-toolbar > .panel-resize-handle.edge-right::after,
+.map-workspace > .initiative-panel > .panel-resize-handle.edge-right::after,
+.map-workspace > .map-viewer-window > .panel-resize-handle.edge-right::after{top:12px;bottom:12px;width:2px;left:50%;transform:translateX(-50%)}
+.map-workspace > .map-toolbar > .panel-resize-handle.edge-top::after,
+.map-workspace > .initiative-panel > .panel-resize-handle.edge-top::after,
+.map-workspace > .map-viewer-window > .panel-resize-handle.edge-top::after,
+.map-workspace > .map-toolbar > .panel-resize-handle.edge-bottom::after,
+.map-workspace > .initiative-panel > .panel-resize-handle.edge-bottom::after,
+.map-workspace > .map-viewer-window > .panel-resize-handle.edge-bottom::after{left:12px;right:12px;height:2px;top:50%;transform:translateY(-50%)}
+.map-workspace > .map-toolbar > .panel-resize-handle.corner-nw::after,
+.map-workspace > .initiative-panel > .panel-resize-handle.corner-nw::after,
+.map-workspace > .map-viewer-window > .panel-resize-handle.corner-nw::after,
+.map-workspace > .map-toolbar > .panel-resize-handle.corner-ne::after,
+.map-workspace > .initiative-panel > .panel-resize-handle.corner-ne::after,
+.map-workspace > .map-viewer-window > .panel-resize-handle.corner-ne::after,
+.map-workspace > .map-toolbar > .panel-resize-handle.corner-sw::after,
+.map-workspace > .initiative-panel > .panel-resize-handle.corner-sw::after,
+.map-workspace > .map-viewer-window > .panel-resize-handle.corner-sw::after,
+.map-workspace > .map-toolbar > .panel-resize-handle.corner-se::after,
+.map-workspace > .initiative-panel > .panel-resize-handle.corner-se::after,
+.map-workspace > .map-viewer-window > .panel-resize-handle.corner-se::after{inset:6px;border-radius:3px;box-shadow:0 0 0 1px rgba(235,210,145,.38) inset}
+.map-workspace > .map-toolbar > .panel-resize-handle:hover,
+.map-workspace > .initiative-panel > .panel-resize-handle:hover,
+.map-workspace > .map-viewer-window > .panel-resize-handle:hover{opacity:1!important;background:transparent!important;}
+.map-workspace > .map-toolbar > .panel-resize-handle:hover::after,
+.map-workspace > .initiative-panel > .panel-resize-handle:hover::after,
+.map-workspace > .map-viewer-window > .panel-resize-handle:hover::after,
+.map-workspace > .map-toolbar.is-resizing > .panel-resize-handle::after,
+.map-workspace > .initiative-panel.is-resizing > .panel-resize-handle::after,
+.map-workspace > .map-viewer-window.is-resizing > .panel-resize-handle::after{opacity:1;}
+
+/* Visibility tools own the map surface while active, so a token never captures
+   the pointer and interrupts a fog/show rectangle. */
+#map-stage.visibility-mode #map-tokens{pointer-events:none!important;}
+
+/* Global Gothic glass pass, intentionally restrained. */
+:root{--gothic-glass:rgba(18,15,15,.72);--gothic-line:rgba(224,190,116,.20);--gothic-hot:rgba(235,210,145,.52);--gothic-shadow:0 16px 44px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,245,215,.035);--gothic-radius:10px}
+.card,.modal-card,.dashboard-row,.combatant-card,.map-lib-card,.token-lib-card,.library-modal{border-color:var(--gothic-line)!important;box-shadow:var(--gothic-shadow)!important;background:linear-gradient(180deg,rgba(26,23,23,.72),rgba(11,10,12,.68))!important;backdrop-filter:blur(10px)!important;}
+button,input,select,textarea{border-radius:7px!important;transition:transform .16s ease,box-shadow .18s ease,border-color .18s ease,background .18s ease,opacity .18s ease!important;}
+button:hover{transform:translateY(-1px)}
+button:active{transform:translateY(0) scale(.985)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid rgba(235,210,145,.55)!important;outline-offset:2px!important;}
+.section-header{border-bottom-color:rgba(224,190,116,.13)!important;}
+.nav-button{transition:background .18s ease,color .18s ease,transform .16s ease!important;}
+
+@media(max-width:780px){
+  .wg-player-shell{padding:7px;gap:7px}
+  .wg-glass-toolbar{align-items:flex-start!important;flex-direction:column!important;}
+  .wg-player-toolbar-controls{width:100%;justify-content:flex-end}
+  .player-map-label{font-size:.84rem!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .wg-player-token{will-change:auto!important}
+  .wg-player-shell *, .wg-player-shell *::before, .wg-player-shell *::after{animation-duration:.01ms!important;transition-duration:.01ms!important;}
+}
+
+/* Player Map condition overlays: death and shock are each a single visual unit. */
+.wg-player-condition-composite{position:absolute;inset:0;z-index:20;border-radius:inherit;pointer-events:none;display:grid;place-items:center;transform-origin:50% 50%;will-change:opacity,transform;}
+.wg-player-death-composite{z-index:22;}
+.wg-player-shock-composite{z-index:21;}
+.wg-player-condition-red{position:absolute;inset:0;border-radius:inherit;background:rgba(156,19,20,.80);}
+.wg-player-death-skull{position:relative;width:72%;height:72%;display:grid;place-items:center;color:rgba(255,255,255,.96);filter:drop-shadow(0 3px 5px rgba(0,0,0,.92));}
+.wg-player-death-skull svg{display:block;width:100%;height:100%;}
+.wg-player-shock-yellow{position:absolute;inset:0;border-radius:inherit;background:rgba(225,181,32,.84);}
+.wg-player-shock-icon{position:relative;width:62%;height:62%;display:grid;place-items:center;color:rgba(0,0,0,.42);filter:drop-shadow(0 2px 3px rgba(0,0,0,.22));}
+.wg-player-shock-icon svg{display:block;width:100%;height:100%;}
+
+/* Combat Tracker shocked state */
+.tracker-shocked-btn.is-shocked,.toggle-shocked{border-color:rgba(225,181,32,.45)!important;background:rgba(225,181,32,.12)!important;color:#f1d96b!important;}
+.initiative-panel-item.shocked{border-color:rgba(225,181,32,.28);}
+
+/* Final combat-condition controls: Edit / Dead / Shock / Remove always share one row. */
+.initiative-panel .tracker-actions-secondary{grid-template-columns:repeat(4,minmax(0,1fr))!important;}
+.initiative-panel .tracker-actions-secondary > button{min-width:0!important;width:100%!important;}
+.initiative-panel .tracker-shocked-btn.is-shocked{background:rgba(225,181,32,.16)!important;border-color:rgba(225,181,32,.55)!important;color:#ffe58a!important;}
+
+
+/* Responsive Combat Tracker condition/action row.
+   Edit, Dead/Revive, Shock/Clear Shock and Remove are a single coherent control group.
+   Every button gets the same height, sizing rules, alignment and overflow behavior so
+   the row remains usable as the floating tracker is resized. */
+.initiative-panel .tracker-actions-secondary{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:6px!important;
+  width:100%!important;
+  min-width:0!important;
+  margin-top:8px!important;
+  align-items:stretch!important;
+}
+.initiative-panel .tracker-actions-secondary > button{
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-width:0!important;
+  height:30px!important;
+  min-height:30px!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0 7px!important;
+  border-radius:7px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  text-align:center!important;
+  white-space:nowrap!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  line-height:1!important;
+  font-size:clamp(.58rem,.72vw,.68rem)!important;
+  font-weight:750!important;
+  letter-spacing:.01em!important;
+}
+.initiative-panel .tracker-actions-secondary > .tracker-edit-btn{min-width:0!important;}
+.initiative-panel .tracker-actions-secondary > .tracker-dead-btn,
+.initiative-panel .tracker-actions-secondary > .tracker-shocked-btn,
+.initiative-panel .tracker-actions-secondary > .tracker-remove-btn{min-width:0!important;width:100%!important;}
+.initiative-panel .tracker-actions-secondary > .tracker-remove-btn{font-size:.95rem!important;padding-inline:0!important;}
+@media(max-width:520px){
+  .initiative-panel .tracker-actions-secondary{gap:4px!important;}
+  .initiative-panel .tracker-actions-secondary > button{height:28px!important;min-height:28px!important;padding-inline:5px!important;font-size:.56rem!important;border-radius:6px!important;}
+}
+@media(max-width:390px){
+  .initiative-panel .tracker-actions-secondary{gap:3px!important;}
+  .initiative-panel .tracker-actions-secondary > button{height:26px!important;min-height:26px!important;padding-inline:4px!important;font-size:.52rem!important;}
+}
+
+/* GM Map token condition: Shock is a visible token overlay, independent of fog. */
+.map-token.is-shocked{isolation:isolate!important;}
+.map-token .token-shock-state{position:absolute!important;inset:0!important;border-radius:inherit!important;z-index:15!important;pointer-events:none!important;display:grid!important;place-items:center!important;overflow:hidden!important;}
+.map-token .token-shock-yellow{position:absolute!important;inset:0!important;border-radius:inherit!important;background:rgba(225,181,32,.84)!important;}
+.map-token .token-shock-icon{position:relative!important;width:62%!important;height:62%!important;display:grid!important;place-items:center!important;color:rgba(0,0,0,.42)!important;filter:drop-shadow(0 2px 3px rgba(0,0,0,.22))!important;z-index:2!important;}
+.map-token .token-shock-icon svg{display:block!important;width:100%!important;height:100%!important;}
+.map-token.is-shocked .token-art{filter:saturate(.78) brightness(.78)!important;}
+
+/* Player Map performance contract: token position is owned by transform only.
+   Older stylesheet layers used left/top transitions, which caused tokens to take
+   two competing animation paths and become increasingly expensive with groups. */
+#player-map-tokens .wg-player-token,
+.wg-player-shell #player-map-tokens .wg-player-token {
+  transition: none !important;
+  will-change: transform, opacity;
+  contain: layout style paint;
+}
+#player-map-tokens {
+  contain: layout style paint;
+  isolation: isolate;
+}

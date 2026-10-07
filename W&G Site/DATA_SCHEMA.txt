@@ -1,0 +1,108 @@
+WRATH & GLORY CAMPAIGN MANAGER - DATA SCHEMA
+============================================
+
+The Content Dashboard is the intended way to enter campaign data manually.
+A local coding model can also generate JSON using these shapes.
+
+CONTENT ENTRY
+-------------
+{
+  "id": "tal-unique-id",
+  "name": "Example Talent",
+  "tier": 1,
+  "description": "Short campaign description.",
+  "keywords": ["Psyker", "Aeldari"],
+  "requiredTags": ["Psyker"],
+  "anyRequiredTags": ["Aeldari", "Sanctioned Psyker"],
+  "forbiddenTags": ["Non-Psyker"],
+  "xpCostByTier": {
+    "1": 10,
+    "2": 10,
+    "3": 15,
+    "4": 20,
+    "5": 25
+  },
+  "extraXp": 0
+}
+
+CONTENT CATEGORIES
+------------------
+- talents
+- psychicAbilities
+- prayers
+- wargear
+- weapons
+
+ELIGIBILITY TAG LOGIC
+---------------------
+A character receives tags from:
+1. The character's custom tags.
+2. The selected archetype's tags.
+3. The selected species' tags.
+4. The selected background's tags.
+
+requiredTags = ALL of these tags must exist.
+anyRequiredTags = AT LEAST ONE of these tags must exist.
+forbiddenTags = ANY matching tag blocks the entry.
+
+If all three are empty, the entry is available to everyone.
+
+DEFINITION
+----------
+Archetypes, species and backgrounds use this shape:
+
+{
+  "id": "species-unique-id",
+  "name": "Example Species",
+  "description": "Short description.",
+  "tags": ["Aeldari", "Xenos"],
+  "xpCostByTier": {
+    "1": 0,
+    "2": 0,
+    "3": 0,
+    "4": 0,
+    "5": 0
+  },
+  "extraXp": 0
+}
+
+CHARACTER XP
+------------
+A character has:
+- tier: 1 through 5
+- extraXp: optional additional XP budget
+
+Starting budget comes from:
+settings.xpBudgetsByTier[tier] + character.extraXp
+
+Spent XP includes:
+- selected talents
+- selected psychic abilities
+- selected prayers
+- selected wargear
+- selected weapons
+- selected archetype
+- selected species
+- selected background
+
+Each selected entry uses xpCostByTier for the character's current tier.
+The entry's extraXp is added to that cost.
+
+CAMPAIGN XP SETTINGS
+--------------------
+settings.xpBudgetsByTier = {
+  "1": 100,
+  "2": 200,
+  "3": 300,
+  "4": 400,
+  "5": 500
+}
+
+settings.allowExtraXp = true/false
+settings.extraXpDefault = number
+
+IMPORTANT
+---------
+These are application mechanics, not a transcription of official rules.
+Populate actual Wrath & Glory content from your authorized rulebook/source.
+Do not assume the example XP values above are official.

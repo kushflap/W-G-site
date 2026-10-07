@@ -1,0 +1,39 @@
+/* Kousha's Table — Imperial gothic palette: blackened iron, aged brass, dried blood, parchment. */
+@font-face {
+  font-family: "KT Display";
+  src: local("Cinzel"), local("Cinzel Regular"), url("../assets/fonts/Cinzel.woff2") format("woff2");
+  font-weight: 400 900;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+
+  --bg: #060505;
+  --bg-2: #0d0b0a;
+  --panel: rgba(18, 15, 13, .86);
+  --panel-2: rgba(32, 26, 21, .92);
+  --panel-3: rgba(48, 39, 30, .96);
+  --panel-solid: #14110f;
+  --surface-2: rgba(32, 26, 21, .92);
+
+  --border: rgba(176, 138, 62, .30);
+  --border-light: rgba(222, 184, 98, .58);
+
+  --text: #eadfc6;
+  --muted: #a39580;
+
+  --accent: #c29a43;
+  --accent-bright: #e8c566;
+  --accent-dim: #7d6228;
+  --blood: #8e1b17;
+  --danger: #c0443a;
+  --success: #7fa76a;
+  --warning: #cf8a3e;
+
+  --shadow: 0 12px 30px rgba(0, 0, 0, .55);
+  --radius: 2px;
+
+  --font-display: "KT Display", "Cinzel", "Trajan Pro 3", "Trajan Pro", Optima, "Palatino Linotype", "Book Antiqua", Palatino, "Times New Roman", serif;
+  --font: "Palatino Linotype", "Book Antiqua", Palatino, "Iowan Old Style", Georgia, serif;
+}
